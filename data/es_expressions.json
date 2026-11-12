@@ -1,0 +1,1379 @@
+[
+{
+"p": "a raíz de",
+"d": "as a result of, following",
+"l": "C1"
+},
+{
+"p": "a lo largo de",
+"d": "throughout, over the course of",
+"l": "B2"
+},
+{
+"p": "a partir de",
+"d": "from, starting from",
+"l": "B2"
+},
+{
+"p": "a pesar de",
+"d": "despite",
+"l": "B2"
+},
+{
+"p": "a través de",
+"d": "through, by means of",
+"l": "B2"
+},
+{
+"p": "al margen de",
+"d": "outside of, aside from",
+"l": "C1"
+},
+{
+"p": "al respecto",
+"d": "in this regard, about it",
+"l": "B2"
+},
+{
+"p": "a su vez",
+"d": "in turn",
+"l": "B2"
+},
+{
+"p": "por su parte",
+"d": "for his/her/its part, in turn",
+"l": "B2"
+},
+{
+"p": "a juicio de",
+"d": "in the opinion of",
+"l": "C1"
+},
+{
+"p": "a falta de",
+"d": "for lack of, in the absence of",
+"l": "C1"
+},
+{
+"p": "a expensas de",
+"d": "at the expense of",
+"l": "C1"
+},
+{
+"p": "a costa de",
+"d": "at the expense of",
+"l": "B2"
+},
+{
+"p": "a favor de",
+"d": "in favor of",
+"l": "B2"
+},
+{
+"p": "en contra de",
+"d": "against",
+"l": "B2"
+},
+{
+"p": "en aras de",
+"d": "for the sake of, in the interest of",
+"l": "C1"
+},
+{
+"p": "en torno a",
+"d": "around, about, regarding",
+"l": "B2"
+},
+{
+"p": "con base en",
+"d": "on the basis of",
+"l": "C1"
+},
+{
+"p": "en función de",
+"d": "depending on, according to",
+"l": "B2"
+},
+{
+"p": "en virtud de",
+"d": "by virtue of, under (a law)",
+"l": "C1"
+},
+{
+"p": "en el marco de",
+"d": "within the framework of, as part of",
+"l": "B2"
+},
+{
+"p": "en el seno de",
+"d": "within, inside",
+"l": "C1"
+},
+{
+"p": "en el transcurso de",
+"d": "in the course of",
+"l": "C1"
+},
+{
+"p": "en cuanto a",
+"d": "as for, regarding",
+"l": "B2"
+},
+{
+"p": "en lo que respecta a",
+"d": "as regards, with respect to",
+"l": "B2"
+},
+{
+"p": "en lo referente a",
+"d": "regarding, concerning",
+"l": "C1"
+},
+{
+"p": "con respecto a",
+"d": "with regard to",
+"l": "B2"
+},
+{
+"p": "con relación a",
+"d": "in relation to",
+"l": "B2"
+},
+{
+"p": "con motivo de",
+"d": "on the occasion of, because of",
+"l": "C1"
+},
+{
+"p": "con vistas a",
+"d": "with a view to",
+"l": "C1"
+},
+{
+"p": "con miras a",
+"d": "with a view to",
+"l": "C1"
+},
+{
+"p": "por medio de",
+"d": "by means of",
+"l": "B2"
+},
+{
+"p": "por parte de",
+"d": "on the part of, by",
+"l": "B2"
+},
+{
+"p": "por encima de",
+"d": "above, over, beyond",
+"l": "B2"
+},
+{
+"p": "por debajo de",
+"d": "below, under",
+"l": "B2"
+},
+{
+"p": "debido a",
+"d": "due to",
+"l": "B2"
+},
+{
+"p": "gracias a",
+"d": "thanks to",
+"l": "B2"
+},
+{
+"p": "dado que",
+"d": "given that, since",
+"l": "B2"
+},
+{
+"p": "puesto que",
+"d": "since, given that",
+"l": "B2"
+},
+{
+"p": "ya que",
+"d": "since, because",
+"l": "B2"
+},
+{
+"p": "así como",
+"d": "as well as",
+"l": "B2"
+},
+{
+"p": "así pues",
+"d": "so, therefore",
+"l": "B2"
+},
+{
+"p": "sin embargo",
+"d": "however",
+"l": "B2"
+},
+{
+"p": "no obstante",
+"d": "nevertheless, however",
+"l": "C1"
+},
+{
+"p": "con todo",
+"d": "all the same, even so",
+"l": "C1"
+},
+{
+"p": "aun así",
+"d": "even so, still",
+"l": "B2"
+},
+{
+"p": "de hecho",
+"d": "in fact, as a matter of fact",
+"l": "B2"
+},
+{
+"p": "en efecto",
+"d": "indeed, in fact",
+"l": "B2"
+},
+{
+"p": "en definitiva",
+"d": "in short, ultimately",
+"l": "C1"
+},
+{
+"p": "en resumidas cuentas",
+"d": "in short, all in all",
+"l": "C1"
+},
+{
+"p": "en última instancia",
+"d": "ultimately, as a last resort",
+"l": "C1"
+},
+{
+"p": "en su defecto",
+"d": "failing that, otherwise",
+"l": "C1"
+},
+{
+"p": "de lo contrario",
+"d": "otherwise, if not",
+"l": "B2"
+},
+{
+"p": "de ahí que",
+"d": "hence, which is why (takes the subjunctive)",
+"l": "C1"
+},
+{
+"p": "por lo tanto",
+"d": "therefore",
+"l": "B2"
+},
+{
+"p": "por consiguiente",
+"d": "consequently",
+"l": "C1"
+},
+{
+"p": "por ende",
+"d": "hence, therefore",
+"l": "C1"
+},
+{
+"p": "{cabe|cabía|cabría} {señalar|destacar|mencionar|recordar|resaltar|subrayar}",
+"d": "it should be noted, it is worth pointing out",
+"l": "C1",
+"s": "cabe destacar"
+},
+{
+"p": "a menos que",
+"d": "unless (takes the subjunctive)",
+"l": "B2"
+},
+{
+"p": "siempre que",
+"d": "provided that, whenever",
+"l": "B2"
+},
+{
+"p": "siempre y cuando",
+"d": "as long as, provided that",
+"l": "B2"
+},
+{
+"p": "a condición de que",
+"d": "on the condition that",
+"l": "C1"
+},
+{
+"p": "en caso de que",
+"d": "in case, if (takes the subjunctive)",
+"l": "B2"
+},
+{
+"p": "con tal de que",
+"d": "provided that",
+"l": "C1"
+},
+{
+"p": "a fin de",
+"d": "in order to",
+"l": "B2"
+},
+{
+"p": "con el fin de",
+"d": "in order to, with the aim of",
+"l": "B2"
+},
+{
+"p": "con el objetivo de",
+"d": "with the aim of",
+"l": "B2"
+},
+{
+"p": "con el propósito de",
+"d": "for the purpose of",
+"l": "C1"
+},
+{
+"p": "de cara a",
+"d": "ahead of, with a view to",
+"l": "C1"
+},
+{
+"p": "de acuerdo con",
+"d": "in accordance with, according to",
+"l": "B2"
+},
+{
+"p": "de conformidad con",
+"d": "in accordance with",
+"l": "C1"
+},
+{
+"p": "de forma que",
+"d": "so that, in such a way that",
+"l": "B2"
+},
+{
+"p": "de modo que",
+"d": "so that, so",
+"l": "B2"
+},
+{
+"p": "de manera que",
+"d": "so that, so",
+"l": "B2"
+},
+{
+"p": "hasta el punto de",
+"d": "to the point of",
+"l": "B2"
+},
+{
+"p": "a tal punto que",
+"d": "to such an extent that",
+"l": "C1"
+},
+{
+"p": "mientras tanto",
+"d": "meanwhile",
+"l": "B2"
+},
+{
+"p": "entre tanto",
+"d": "meanwhile",
+"l": "C1"
+},
+{
+"p": "acto seguido",
+"d": "right after, immediately afterwards",
+"l": "C1"
+},
+{
+"p": "a continuación",
+"d": "next, below, following this",
+"l": "B2"
+},
+{
+"p": "a su paso",
+"d": "in its path, as it passes",
+"l": "C1"
+},
+{
+"p": "a diario",
+"d": "daily, every day",
+"l": "B2"
+},
+{
+"p": "a medida que",
+"d": "as (gradually), as time goes on",
+"l": "B2"
+},
+{
+"p": "a la espera de",
+"d": "awaiting, pending",
+"l": "C1"
+},
+{
+"p": "a la hora de",
+"d": "when it comes to",
+"l": "B2"
+},
+{
+"p": "a la vez",
+"d": "at the same time",
+"l": "B2"
+},
+{
+"p": "a la par",
+"d": "at the same time, on a par",
+"l": "C1"
+},
+{
+"p": "a simple vista",
+"d": "at first glance, to the naked eye",
+"l": "C1"
+},
+{
+"p": "a duras penas",
+"d": "barely, with great difficulty",
+"l": "C1"
+},
+{
+"p": "a ciencia cierta",
+"d": "for certain, with certainty",
+"l": "C1"
+},
+{
+"p": "a mansalva",
+"d": "in large numbers, indiscriminately",
+"l": "C1"
+},
+{
+"p": "a rajatabla",
+"d": "strictly, to the letter",
+"l": "C1"
+},
+{
+"p": "a toda costa",
+"d": "at all costs",
+"l": "B2"
+},
+{
+"p": "a capa y espada",
+"d": "fiercely, tooth and nail",
+"l": "C1"
+},
+{
+"p": "a regañadientes",
+"d": "reluctantly, grudgingly",
+"l": "C1"
+},
+{
+"p": "a sabiendas de",
+"d": "knowing full well",
+"l": "C1"
+},
+{
+"p": "de antemano",
+"d": "in advance, beforehand",
+"l": "B2"
+},
+{
+"p": "de golpe",
+"d": "suddenly, all at once",
+"l": "B2"
+},
+{
+"p": "de pronto",
+"d": "suddenly",
+"l": "B2"
+},
+{
+"p": "de sobra",
+"d": "more than enough, well",
+"l": "C1"
+},
+{
+"p": "de buenas a primeras",
+"d": "suddenly, out of the blue",
+"l": "C1"
+},
+{
+"p": "de par en par",
+"d": "wide open",
+"l": "C1"
+},
+{
+"p": "de cabo a rabo",
+"d": "from start to finish",
+"l": "C1"
+},
+{
+"p": "de raíz",
+"d": "at the root, completely",
+"l": "C1"
+},
+{
+"p": "de momento",
+"d": "for now, for the time being",
+"l": "B2"
+},
+{
+"p": "de un plumazo",
+"d": "at a stroke, in one go",
+"l": "C1"
+},
+{
+"p": "en medio de",
+"d": "in the middle of, amid",
+"l": "B2"
+},
+{
+"p": "en pos de",
+"d": "in pursuit of, after",
+"l": "C1"
+},
+{
+"p": "en vilo",
+"d": "in suspense, on edge",
+"l": "C1"
+},
+{
+"p": "en vigor",
+"d": "in force",
+"l": "B2"
+},
+{
+"p": "en curso",
+"d": "ongoing, under way",
+"l": "B2"
+},
+{
+"p": "en marcha",
+"d": "under way, running",
+"l": "B2"
+},
+{
+"p": "en ciernes",
+"d": "in the making, budding",
+"l": "C1"
+},
+{
+"p": "en pie de guerra",
+"d": "up in arms, on a war footing",
+"l": "C1"
+},
+{
+"p": "en el acto",
+"d": "on the spot, immediately",
+"l": "C1"
+},
+{
+"p": "en su totalidad",
+"d": "in its entirety",
+"l": "B2"
+},
+{
+"p": "en lo sucesivo",
+"d": "from now on, henceforth",
+"l": "C1"
+},
+{
+"p": "en la medida en que",
+"d": "insofar as, to the extent that",
+"l": "C1"
+},
+{
+"p": "en la medida de lo posible",
+"d": "as far as possible",
+"l": "B2"
+},
+{
+"p": "en un principio",
+"d": "at first, initially",
+"l": "B2"
+},
+{
+"p": "en un abrir y cerrar de ojos",
+"d": "in the blink of an eye",
+"l": "C1"
+},
+{
+"p": "por otra parte",
+"d": "on the other hand",
+"l": "B2"
+},
+{
+"p": "por otro lado",
+"d": "on the other hand",
+"l": "B2"
+},
+{
+"p": "por si fuera poco",
+"d": "as if that were not enough",
+"l": "C1"
+},
+{
+"p": "por lo general",
+"d": "generally, as a rule",
+"l": "B2"
+},
+{
+"p": "por lo visto",
+"d": "apparently",
+"l": "B2"
+},
+{
+"p": "por añadidura",
+"d": "in addition, on top of that",
+"l": "C1"
+},
+{
+"p": "por antonomasia",
+"d": "par excellence",
+"l": "C1"
+},
+{
+"p": "por cuenta propia",
+"d": "on one's own account, independently",
+"l": "B2"
+},
+{
+"p": "por su cuenta",
+"d": "on one's own, independently",
+"l": "B2"
+},
+{
+"p": "en lo más mínimo",
+"d": "in the slightest",
+"l": "C1"
+},
+{
+"p": "sobre la marcha",
+"d": "as one goes along, on the fly",
+"l": "C1"
+},
+{
+"p": "al pie de la letra",
+"d": "literally, to the letter",
+"l": "C1"
+},
+{
+"p": "al unísono",
+"d": "in unison",
+"l": "C1"
+},
+{
+"p": "a puerta cerrada",
+"d": "behind closed doors",
+"l": "C1"
+},
+{
+"p": "a bocajarro",
+"d": "at point-blank range, bluntly",
+"l": "C1"
+},
+{
+"p": "a ojos vistas",
+"d": "visibly, openly",
+"l": "C1"
+},
+{
+"p": "contra viento y marea",
+"d": "come what may, against all odds",
+"l": "C1"
+},
+{
+"p": "cuando menos",
+"d": "at least, to say the least",
+"l": "C1"
+},
+{
+"p": "tarde o temprano",
+"d": "sooner or later",
+"l": "B2"
+},
+{
+"p": "más bien",
+"d": "rather, more like",
+"l": "B2"
+},
+{
+"p": "cada vez más",
+"d": "more and more, increasingly",
+"l": "B2"
+},
+{
+"p": "de nuevo cuño",
+"d": "newly minted, of recent creation",
+"l": "C1"
+},
+{
+"p": "de primera mano",
+"d": "first-hand",
+"l": "B2"
+},
+{
+"p": "de segunda mano",
+"d": "second-hand",
+"l": "B2"
+},
+{
+"p": "de fondo",
+"d": "underlying, in the background",
+"l": "B2"
+},
+{
+"p": "en primera línea",
+"d": "on the front line",
+"l": "C1"
+},
+{
+"p": "al borde de",
+"d": "on the verge of",
+"l": "B2"
+},
+{
+"p": "al frente de",
+"d": "at the head of, in charge of",
+"l": "B2"
+},
+{
+"p": "al servicio de",
+"d": "at the service of",
+"l": "B2"
+},
+{
+"p": "a cargo de",
+"d": "in charge of, run by",
+"l": "B2"
+},
+{
+"p": "a instancias de",
+"d": "at the request of",
+"l": "C1"
+},
+{
+"p": "bajo la égida de",
+"d": "under the auspices of",
+"l": "C1"
+},
+{
+"p": "bajo el amparo de",
+"d": "under the protection of",
+"l": "C1"
+},
+{
+"p": "bajo la batuta de",
+"d": "under the leadership of",
+"l": "C1"
+},
+{
+"p": "sobre el terreno",
+"d": "on the ground, on site",
+"l": "B2"
+},
+{
+"p": "sobre la mesa",
+"d": "on the table, under discussion",
+"l": "B2"
+},
+{
+"p": "sin ir más lejos",
+"d": "for instance, to take a case at hand",
+"l": "C1"
+},
+{
+"p": "sin lugar a dudas",
+"d": "without a doubt",
+"l": "B2"
+},
+{
+"p": "cuanto antes",
+"d": "as soon as possible",
+"l": "B2"
+},
+{
+"p": "hoy por hoy",
+"d": "for the time being, right now",
+"l": "C1"
+},
+{
+"p": "hoy en día",
+"d": "nowadays, today",
+"l": "B2"
+},
+{
+"p": "a día de hoy",
+"d": "as of today, to date",
+"l": "B2"
+},
+{
+"p": "a estas alturas",
+"d": "by now, at this stage",
+"l": "B2"
+},
+{
+"p": "~dar lugar a",
+"d": "to give rise to",
+"l": "B2"
+},
+{
+"p": "~dar pie a",
+"d": "to give rise to, to prompt",
+"l": "C1"
+},
+{
+"p": "~dar cuenta de",
+"d": "to report on, to account for",
+"l": "B2"
+},
+{
+"p": "~dar paso a",
+"d": "to give way to",
+"l": "B2"
+},
+{
+"p": "~dar marcha atrás",
+"d": "to backtrack, to reverse course",
+"l": "B2"
+},
+{
+"p": "~dar el visto bueno",
+"d": "to approve, to give the green light",
+"l": "C1"
+},
+{
+"p": "~dar la voz de alarma",
+"d": "to raise the alarm",
+"l": "C1"
+},
+{
+"p": "~dar a luz",
+"d": "to give birth",
+"l": "B2"
+},
+{
+"p": "~dar a conocer",
+"d": "to make known, to announce",
+"l": "B2"
+},
+{
+"p": "~dar la espalda a",
+"d": "to turn one's back on",
+"l": "B2"
+},
+{
+"p": "~dar rienda suelta a",
+"d": "to give free rein to",
+"l": "C1"
+},
+{
+"p": "~dar de lado",
+"d": "to snub, to cold-shoulder",
+"l": "C1"
+},
+{
+"p": "~hacer hincapié en",
+"d": "to emphasize, to stress",
+"l": "C1"
+},
+{
+"p": "~hacer caso omiso de",
+"d": "to ignore completely",
+"l": "C1"
+},
+{
+"p": "~hacer caso omiso a",
+"d": "to ignore completely",
+"l": "C1"
+},
+{
+"p": "~hacer frente a",
+"d": "to face, to deal with",
+"l": "B2"
+},
+{
+"p": "~hacer alusión a",
+"d": "to allude to",
+"l": "C1"
+},
+{
+"p": "~hacer balance de",
+"d": "to take stock of",
+"l": "C1"
+},
+{
+"p": "~hacer acto de presencia",
+"d": "to put in an appearance",
+"l": "C1"
+},
+{
+"p": "~hacer las veces de",
+"d": "to serve as, to act as",
+"l": "C1"
+},
+{
+"p": "~hacer eco de",
+"d": "to echo, to relay",
+"l": "C1"
+},
+{
+"p": "~hacer cargo de",
+"d": "to take charge of, to take responsibility for",
+"l": "B2"
+},
+{
+"p": "~hacer pública",
+"d": "to make public",
+"l": "B2"
+},
+{
+"p": "~tener lugar",
+"d": "to take place",
+"l": "B2"
+},
+{
+"p": "~tener en cuenta",
+"d": "to take into account",
+"l": "B2"
+},
+{
+"p": "~tener a bien",
+"d": "to see fit to",
+"l": "C1"
+},
+{
+"p": "~tener presente",
+"d": "to bear in mind",
+"l": "B2"
+},
+{
+"p": "~tener éxito",
+"d": "to succeed, to be successful",
+"l": "B2"
+},
+{
+"p": "~tener por objeto",
+"d": "to have as its aim",
+"l": "C1"
+},
+{
+"p": "~tener en mente",
+"d": "to have in mind",
+"l": "B2"
+},
+{
+"p": "~tomar en cuenta",
+"d": "to take into account",
+"l": "B2"
+},
+{
+"p": "~tomar medidas",
+"d": "to take measures",
+"l": "B2"
+},
+{
+"p": "~tomar la palabra",
+"d": "to take the floor, to speak",
+"l": "B2"
+},
+{
+"p": "~tomar cartas en el asunto",
+"d": "to step in, to take action",
+"l": "C1"
+},
+{
+"p": "~tomar partido",
+"d": "to take sides",
+"l": "C1"
+},
+{
+"p": "~poner en marcha",
+"d": "to set in motion, to launch",
+"l": "B2"
+},
+{
+"p": "~poner en entredicho",
+"d": "to call into question",
+"l": "C1"
+},
+{
+"p": "~poner de manifiesto",
+"d": "to make evident, to reveal",
+"l": "C1"
+},
+{
+"p": "~poner de relieve",
+"d": "to highlight, to underline",
+"l": "C1"
+},
+{
+"p": "~poner en peligro",
+"d": "to endanger, to put at risk",
+"l": "B2"
+},
+{
+"p": "~poner en duda",
+"d": "to cast doubt on, to question",
+"l": "B2"
+},
+{
+"p": "~poner fin a",
+"d": "to put an end to",
+"l": "B2"
+},
+{
+"p": "~poner coto a",
+"d": "to curb, to put a stop to",
+"l": "C1"
+},
+{
+"p": "~poner el grito en el cielo",
+"d": "to hit the roof, to protest loudly",
+"l": "C1"
+},
+{
+"p": "~poner a prueba",
+"d": "to put to the test",
+"l": "B2"
+},
+{
+"p": "~poner sobre la mesa",
+"d": "to put on the table",
+"l": "B2"
+},
+{
+"p": "~llevar a cabo",
+"d": "to carry out",
+"l": "B2"
+},
+{
+"p": "~llevar a término",
+"d": "to bring to completion",
+"l": "C1"
+},
+{
+"p": "~llevar consigo",
+"d": "to entail, to bring with it",
+"l": "C1"
+},
+{
+"p": "~llevar las de perder",
+"d": "to be at a disadvantage, to be on the losing side",
+"l": "C1"
+},
+{
+"p": "~echar mano de",
+"d": "to resort to, to make use of",
+"l": "C1"
+},
+{
+"p": "~echar por tierra",
+"d": "to ruin, to wreck",
+"l": "C1"
+},
+{
+"p": "~echar leña al fuego",
+"d": "to add fuel to the fire",
+"l": "C1"
+},
+{
+"p": "~sacar a relucir",
+"d": "to bring up, to mention",
+"l": "C1"
+},
+{
+"p": "~sacar provecho de",
+"d": "to benefit from, to take advantage of",
+"l": "B2"
+},
+{
+"p": "~sacar a la luz",
+"d": "to bring to light, to reveal",
+"l": "C1"
+},
+{
+"p": "~salir a la luz",
+"d": "to come to light",
+"l": "C1"
+},
+{
+"p": "~salir adelante",
+"d": "to get through, to pull through",
+"l": "B2"
+},
+{
+"p": "~salir a flote",
+"d": "to stay afloat, to recover",
+"l": "C1"
+},
+{
+"p": "~ser objeto de",
+"d": "to be the subject of",
+"l": "B2"
+},
+{
+"p": "~ser víctima de",
+"d": "to be a victim of",
+"l": "B2"
+},
+{
+"p": "~ser consciente de",
+"d": "to be aware of",
+"l": "B2"
+},
+{
+"p": "~ser capaz de",
+"d": "to be capable of, to be able to",
+"l": "B2"
+},
+{
+"p": "~ser partidario de",
+"d": "to be in favor of, to support",
+"l": "C1"
+},
+{
+"p": "~ser proclive a",
+"d": "to be prone to",
+"l": "C1"
+},
+{
+"p": "~estar a punto de",
+"d": "to be about to",
+"l": "B2"
+},
+{
+"p": "~estar en juego",
+"d": "to be at stake",
+"l": "B2"
+},
+{
+"p": "~estar al tanto de",
+"d": "to be aware of, to be up to date on",
+"l": "C1"
+},
+{
+"p": "~estar en boga",
+"d": "to be in vogue",
+"l": "C1"
+},
+{
+"p": "~estar a la altura de",
+"d": "to be up to, to live up to",
+"l": "C1"
+},
+{
+"p": "~estar en el punto de mira",
+"d": "to be in the spotlight, to be a target",
+"l": "C1"
+},
+{
+"p": "~estar en manos de",
+"d": "to be in the hands of",
+"l": "B2"
+},
+{
+"p": "~estar en entredicho",
+"d": "to be in question",
+"l": "C1"
+},
+{
+"p": "~estar sujeto a",
+"d": "to be subject to",
+"l": "C1"
+},
+{
+"p": "se {trata|trataba|tratará|trataría|tratan|trataban} de",
+"d": "it is a matter of, it is about",
+"l": "B2",
+"s": "se trata de"
+},
+{
+"p": "~caer en saco roto",
+"d": "to fall on deaf ears, to be wasted",
+"l": "C1"
+},
+{
+"p": "~dejar de lado",
+"d": "to set aside, to leave out",
+"l": "B2"
+},
+{
+"p": "~dejar claro",
+"d": "to make clear",
+"l": "B2"
+},
+{
+"p": "~dejar en evidencia",
+"d": "to expose, to show up",
+"l": "C1"
+},
+{
+"p": "~dejar huella",
+"d": "to leave a mark",
+"l": "B2"
+},
+{
+"p": "~correr el riesgo de",
+"d": "to run the risk of",
+"l": "B2"
+},
+{
+"p": "~tirar la toalla",
+"d": "to throw in the towel",
+"l": "C1"
+},
+{
+"p": "~tirar de la manta",
+"d": "to spill the beans, to blow the whistle",
+"l": "C1"
+},
+{
+"p": "~mover ficha",
+"d": "to make a move",
+"l": "C1"
+},
+{
+"p": "~romper el hielo",
+"d": "to break the ice",
+"l": "B2"
+},
+{
+"p": "~llegar a un acuerdo",
+"d": "to reach an agreement",
+"l": "B2"
+},
+{
+"p": "~alcanzar un acuerdo",
+"d": "to reach an agreement",
+"l": "B2"
+},
+{
+"p": "~llegar a las manos",
+"d": "to come to blows",
+"l": "C1"
+},
+{
+"p": "~tender la mano",
+"d": "to extend a hand, to offer help",
+"l": "B2"
+},
+{
+"p": "~abrir la puerta a",
+"d": "to open the door to",
+"l": "B2"
+},
+{
+"p": "~cerrar filas",
+"d": "to close ranks",
+"l": "C1"
+},
+{
+"p": "~cerrar el paso a",
+"d": "to block the way to",
+"l": "C1"
+},
+{
+"p": "~allanar el camino",
+"d": "to pave the way",
+"l": "C1"
+},
+{
+"p": "~sentar las bases",
+"d": "to lay the foundations",
+"l": "C1"
+},
+{
+"p": "~sentar un precedente",
+"d": "to set a precedent",
+"l": "B2"
+},
+{
+"p": "~marcar un hito",
+"d": "to mark a milestone",
+"l": "B2"
+},
+{
+"p": "~ganar terreno",
+"d": "to gain ground",
+"l": "B2"
+},
+{
+"p": "~perder terreno",
+"d": "to lose ground",
+"l": "B2"
+},
+{
+"p": "~jugar un papel",
+"d": "to play a role",
+"l": "B2"
+},
+{
+"p": "~desempeñar un papel",
+"d": "to play a role",
+"l": "B2"
+},
+{
+"p": "~arrojar luz sobre",
+"d": "to shed light on",
+"l": "C1"
+},
+{
+"p": "~cobrar fuerza",
+"d": "to gain strength, to gather momentum",
+"l": "C1"
+},
+{
+"p": "~cobrar importancia",
+"d": "to gain importance",
+"l": "B2"
+},
+{
+"p": "~cobrar vida",
+"d": "to come to life",
+"l": "B2"
+},
+{
+"p": "~entrar en vigor",
+"d": "to come into force",
+"l": "B2"
+},
+{
+"p": "~entrar en juego",
+"d": "to come into play",
+"l": "B2"
+},
+{
+"p": "~quedar en evidencia",
+"d": "to be exposed, to be shown up",
+"l": "C1"
+},
+{
+"p": "~verse obligado a",
+"d": "to be forced to",
+"l": "B2"
+},
+{
+"p": "~hacer mella en",
+"d": "to take a toll on, to make a dent in",
+"l": "C1"
+},
+{
+"p": "~tener cabida",
+"d": "to have room, to fit in",
+"l": "C1"
+},
+{
+"p": "~tener vigencia",
+"d": "to be in force, to remain valid",
+"l": "C1"
+}
+]
