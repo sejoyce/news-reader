@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>French News Reader</title>
+<title>News Reader</title>
 <style>
 /* Layout: one plain reading column on white; dotted bright underline marks B2/C1 vocabulary; a small black tooltip shows the definition. */
 :root {
@@ -113,6 +113,7 @@ article p.body { font-size: 1.125rem; line-height: 1.75; margin: 0 0 1.1em; max-
 .x { cursor: pointer; }
 .x:hover, .x.on { background: var(--hl2-soft); }
 .x:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(--bg); border: 1px solid #999; border-radius: 0; padding: 2px 6px; }
 .opt { display: block; font-family: var(--sans); font-size: 0.8125rem; color: var(--muted); margin-top: 6px; }
 
 #tip {
@@ -145,7 +146,7 @@ article p.body { font-size: 1.125rem; line-height: 1.75; margin: 0 0 1.1em; max-
 <body>
 <main>
   <div class="bar">
-    <strong>French News Reader</strong>
+    <strong>News Reader</strong>
     <span id="mode">Sample article written for this prototype</span>
   </div>
 
@@ -155,6 +156,7 @@ article p.body { font-size: 1.125rem; line-height: 1.75; margin: 0 0 1.1em; max-
     Hover on desktop, or tap on mobile, to see the meaning.
   </p>
   <label class="opt" for="hide-cog"><input type="checkbox" id="hide-cog" checked> Hide words that look like English (cognates)</label>
+  <label class="opt" for="lang">Language <select id="lang"></select></label>
   <label class="opt" for="show-expr"><input type="checkbox" id="show-expr" checked> Mark fixed expressions</label>
 
   <form class="load" id="load">
@@ -167,7 +169,7 @@ article p.body { font-size: 1.125rem; line-height: 1.75; margin: 0 0 1.1em; max-
     <p id="status" role="status" aria-live="polite"></p>
   </form>
 
-  <article id="article" lang="fr"></article>
+  <article id="article"></article>
 
   <p class="foot">
     Articles are fetched from the link you give and shown here for personal reading, with the journalist and publication credited under the headline. Paywalled pages only show what the site makes public.
@@ -179,6 +181,8 @@ article p.body { font-size: 1.125rem; line-height: 1.75; margin: 0 0 1.1em; max-
 
 <script src="vendor/Readability.js"></script>
 <script src="config.js"></script>
+<script src="langs/fr.js"></script>
+<script src="langs/es.js"></script>
 <script>
 (function () {
 "use strict";
@@ -186,22 +190,18 @@ article p.body { font-size: 1.125rem; line-height: 1.75; margin: 0 0 1.1em; max-
 var $ = function (id) { return document.getElementById(id); };
 var root = $("article"), tip = $("tip"), statusEl = $("status"), modeEl = $("mode"), goBtn = $("go");
 
-// ---------- Word levels (estimated from frequency rank) ----------
-// Words ranked 1..KNOWN_MAX are treated as everyday vocabulary. Past that, B2 up to B2_MAX, then C1.
-var KNOWN_MAX = 9000, B2_MAX = 25000, MIN_LEN = 5;
-var rank = null; // Map word -> rank (1 = most frequent)
-var TOKEN = /aujourd['’]hui|\p{L}+(?:-\p{L}+)*/gu;
+// ---------- Language packs ----------
+// Everything that depends on the language (word list, cognate rules, expressions, boilerplate) lives in langs/<code>.js.
+var LANGS = window.LANGS || {};
+var LANG = null;                    // the active language pack
+var packs = {};                     // code -> { rank, exprs, ready }
+var rank = null, EXPRS = null;      // word ranks and compiled expressions of the active language
+var en = null, EN_MAX = 40000;      // English word ranks, used to spot cognates
+var hideCognates = true, showExpr = true;
 
-var en = null; // Map English word -> rank, used to spot cognates
-var EN_MAX = 40000;
-var hideCognates = true;
+function strip(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+function escRe(x) { return x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
-var frReady = fetch("data/fr_words.txt")
-  .then(function (r) { if (!r.ok) throw new Error("word list"); return r.text(); })
-  .then(function (t) {
-    rank = new Map();
-    t.split("\n").forEach(function (w, i) { w = w.trim(); if (w && !rank.has(w)) rank.set(w, i + 1); });
-  });
 var enReady = fetch("data/en_words.txt")
   .then(function (r) { return r.ok ? r.text() : ""; })
   .then(function (t) {
@@ -210,35 +210,23 @@ var enReady = fetch("data/en_words.txt")
     t.split("\n").forEach(function (w, i) { w = w.trim(); if (w && !en.has(w)) en.set(w, i + 1); });
   })
   .catch(function () { en = null; });
-// ---------- Fixed expressions (data/expressions.json) ----------
-// Pattern syntax: ~verb matches any form of that verb, {a|b} lists alternatives, "de" also matches des, du and d'.
-var EXPRS = null, showExpr = true;
-var NEG = "(?:\\s+(?:pas|plus|jamais|guère|toujours|déjà|encore|aussi|bien|même|souvent|également))?";
-var VERB_FORMS = {
-  "être": "(?:être|est|es|sont|sommes|êtes|était|étaient|étais|été|étant|sera|seront|serait|seraient|soit|soient|fut|furent|suis|fût)",
-  "avoir": "(?:avoir|a|as|ai|avons|avez|ont|avait|avaient|avais|aura|auront|aurait|auraient|eu|eue|eus|eues|ayant|eut|eurent|aie|aient|ait)",
-  "faire": "(?:faire|fai\\p{L}*|fait|font|fais|fer\\p{L}*|fit|firent|fass\\p{L}*)",
-  "aller": "(?:aller|all\\p{L}*|vais|vas|va|vont|ir\\p{L}*|aill\\p{L}*)",
-  "prendre": "(?:prendr\\p{L}*|pren\\p{L}*|pris\\p{L}*|prit|prirent)",
-  "mettre": "(?:mettr\\p{L}*|mett\\p{L}*|met|mets|mis\\p{L}*|mit|mirent)",
-  "tenir": "(?:tenir|ten\\p{L}*|tien\\p{L}*|tint|tinrent|tiendr\\p{L}*|tenu\\p{L}*)",
-  "venir": "(?:venir|ven\\p{L}*|vien\\p{L}*|vint|vinrent|viendr\\p{L}*|venu\\p{L}*)"
-};
-function escRe(x) { return x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
-function verbRe(inf) {
-  if (VERB_FORMS[inf]) return VERB_FORMS[inf];
-  var stem = inf.replace(/(er|ir|re)$/, "");
+
+// ---------- Fixed expressions ----------
+// Pattern syntax: ~verb matches any form of that verb, {a|b} lists alternatives, and a few small words (de, a) are made flexible per language.
+function verbRe(inf, L) {
+  if (L.verbForms[inf]) return L.verbForms[inf];
+  var stem = inf.replace(L.infEnding, "");
   return stem.length < 3 ? escRe(inf) : "(?:" + escRe(inf) + "|" + escRe(stem) + "\\p{L}*)";
 }
-function compileExpr(it) {
+function compileExpr(it, L) {
   try {
     var parts = [], lit = "";
     it.p.split(/\s+/).forEach(function (tok) {
       (tok.match(/[^'’]+['’]?/g) || [tok]).forEach(function (pc) {
         var apos = /['’]$/.test(pc), core = pc.replace(/['’]$/, ""), re;
-        if (core.charAt(0) === "~") re = verbRe(core.slice(1)) + NEG;
+        if (core.charAt(0) === "~") re = verbRe(core.slice(1), L) + L.exprNeg;
         else if (core.charAt(0) === "{") re = "(?:" + core.slice(1, -1).split("|").map(escRe).join("|") + ")";
-        else if (core === "de") re = "(?:des|du|de|d['’])";
+        else if (L.tokenMap && L.tokenMap[core]) re = L.tokenMap[core];
         else { re = escRe(core); if (core.length > lit.length) lit = core; }
         if (apos) re += "['’]";
         parts.push(re);
@@ -249,10 +237,6 @@ function compileExpr(it) {
     return { src: src, re: null, needle: lit.length >= 3 ? lit.toLowerCase() : "", def: it.d, lvl: it.l, show: it.s || it.p.replace(/~/g, "") };
   } catch (e) { return null; }
 }
-var exprReady = fetch("data/expressions.json")
-  .then(function (r) { return r.ok ? r.json() : []; })
-  .then(function (list) { EXPRS = list.map(compileExpr).filter(Boolean); })
-  .catch(function () { EXPRS = null; });
 
 function findExpressions(text) {
   if (!EXPRS || !showExpr) return [];
@@ -272,96 +256,90 @@ function findExpressions(text) {
   return out;
 }
 
-var rankReady = Promise.all([frReady, enReady, exprReady]);
-rankReady.then(function () {
-  var d = document.getElementById("diag");
-  if (d) d.textContent = " Word lists: French " + (rank ? rank.size.toLocaleString("en-US") : 0) + ", English " +
-    (en ? en.size.toLocaleString("en-US") : "NOT FOUND (expected at data/en_words.txt)") + ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at data/expressions.json)") + ". Page version 7.";
-});
-
-// ---------- Cognates (French words with a clear English twin) ----------
-// Words that look alike but mean something different are never hidden.
-var FALSE_FRIENDS = new Set(("actuel actuelle actuels actuelles actuellement eventuel eventuelle eventuels eventuelles eventuellement " +
-  "sensible sensibles librairie assister assiste assistent pretendre pretend pretendent supporter supporte supportent " +
-  "deception deceptions location locations large larges blesse blessee blesses blessure blessures coin coins journee journees " +
-  "ignorer ignore ignoree ignores ignorent attendre attend attendent achever acheve achevent chance chances formidable formidables " +
-  "prejudice prejudices rester reste restent sale salement agenda agendas gentil gentille figure figures lecture lectures " +
-  "demander demande demandent injure injures versatile resumer resume resument preservatif").split(" "));
-
-var NOUN_SUFFIX = [["isation","ization"],["isation","ation"],["tion","tion"],["sion","sion"],["ique","ic"],["ique","ical"],["ique","y"],["iques","ics"],["aire","ary"],
-  ["eur","or"],["eur","er"],["euse","er"],["ite","ity"],["isme","ism"],["iste","ist"],["ive","ive"],["if","ive"],["aux","al"],
-  ["el","al"],["elle","al"],["ence","ence"],["ance","ance"],["ment","ment"],["ement","ely"],["oire","ory"],["ie","y"],["ier","er"],
-  ["ain","an"],["aine","an"],["eux","ous"],["euse","ous"],["ure","ure"],["age","age"],["ant","ant"],["ent","ent"],["ible","ible"],["able","able"]];
-var VERB_ENDINGS = ["iser","ier","er","ent","ons","ez","ees","ee","es","e","ant","ie","ies","s"];
-
-function strip(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
-
-function candidates(w) {
-  var out = {};
-  function add(c) {
-    if (c.length < 4) return;
-    out[c] = 1;
-    if (c.indexOf("ou") !== -1) out[c.replace("ou", "o")] = 1;   // approuver -> approve
-  }
-  var forms = [w];
-  if (/s$/.test(w)) forms.push(w.slice(0, -1));
-  if (/es$/.test(w)) forms.push(w.slice(0, -2));
-  if (/e$/.test(w)) forms.push(w.slice(0, -1));
-  forms.forEach(function (f) {
-    add(f); add(f + "e");
-    NOUN_SUFFIX.forEach(function (p) { if (f.slice(-p[0].length) === p[0]) add(f.slice(0, -p[0].length) + p[1]); });
-  });
-  VERB_ENDINGS.forEach(function (E) {
-    if (w.slice(-E.length) !== E) return;
-    var stem = w.slice(0, -E.length);
-    if (stem.length < 3) return;
-    add(stem); add(stem + "e"); add(stem + "ate"); add(stem + "y");
-    if (E === "iser" || /s$/.test(stem)) add(stem.slice(0, -1) + "ze");  // organiser -> organize
-    if (E === "iser") add(stem + "e");
-  });
-  return Object.keys(out);
+// ---------- Loading a language ----------
+function loadPack(code) {
+  if (packs[code]) return packs[code].ready;
+  var L = LANGS[code], pk = packs[code] = { rank: null, exprs: null, ready: null };
+  var words = fetch(L.words)
+    .then(function (r) { if (!r.ok) throw new Error("word list"); return r.text(); })
+    .then(function (t) {
+      var m = new Map();
+      t.split("\n").forEach(function (w, i) { w = w.trim(); if (w && !m.has(w)) m.set(w, i + 1); });
+      pk.rank = m;
+    });
+  var ex = fetch(L.exprs)
+    .then(function (r) { return r.ok ? r.json() : []; })
+    .then(function (list) { pk.exprs = list.map(function (it) { return compileExpr(it, L); }).filter(Boolean); })
+    .catch(function () { pk.exprs = null; });
+  pk.ready = Promise.all([words, ex, enReady]);
+  return pk.ready;
 }
 
+function updateDiag() {
+  var d = $("diag");
+  if (!d || !LANG) return;
+  d.textContent = " Language: " + LANG.name + ". Word lists: " + LANG.name + " " + (rank ? rank.size.toLocaleString("en-US") : "NOT LOADED (expected at " + LANG.words + ")") +
+    ", English " + (en ? en.size.toLocaleString("en-US") : "NOT FOUND (expected at data/en_words.txt)") +
+    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 8.";
+}
+
+function setLanguage(code) {
+  var L = LANGS[code];
+  if (!L) return Promise.resolve();
+  LANG = L; rank = null; EXPRS = null;
+  root.lang = L.code;
+  $("lang").value = code;
+  $("f-url").placeholder = L.placeholder;
+  return loadPack(code).then(function () {
+    if (LANG === L) { rank = packs[code].rank; EXPRS = packs[code].exprs; }
+  }, function () {}).then(function () {
+    if (LANG === L && !rank) setStatus("The " + L.name + " word list did not load, so no words are underlined.", true);
+    updateDiag();
+  });
+}
+
+function pickLang(pageLang) {
+  var c = (pageLang || "").slice(0, 2);
+  return LANGS[c] ? c : (LANG ? LANG.code : "fr");
+}
+
+// ---------- Cognates (words with a clear English twin) ----------
 function isCognate(word) {
   if (!en) return false;
-  var raw = word.toLowerCase().replace(/’/g, "'");
+  var raw = LANG.norm(word);
   if (raw.indexOf("-") !== -1) return false;
-  if (FALSE_FRIENDS.has(strip(raw))) return false;
-  var variants = [raw];
-  var circ = raw.replace(/ê/g, "es").replace(/ô/g, "os").replace(/â/g, "as").replace(/î/g, "is").replace(/û/g, "us");  // forêt -> forest
-  if (circ !== raw) variants.push(circ);
-  if (raw.charAt(0) === "é") variants.push("s" + raw.slice(1));                                                       // étrange -> strange
-  for (var i = 0; i < variants.length; i++) {
-    var cs = candidates(strip(variants[i]));
-    for (var j = 0; j < cs.length; j++) {
-      var r = en.get(cs[j]);
-      if (r !== undefined && r <= EN_MAX) return true;
-    }
+  if (LANG.falseFriends.has(strip(raw))) return false;
+  var cs = LANG.cognateCandidates(raw);
+  for (var j = 0; j < cs.length; j++) {
+    var r = en.get(cs[j]);
+    if (r !== undefined && r <= EN_MAX) return true;
   }
   return false;
 }
 
+// ---------- Word levels (estimated from frequency rank) ----------
+// Words ranked 1..knownMax are everyday vocabulary. Past that, B2 up to b2Max, then C1.
 function levelOf(token) {
-  if (token.length < MIN_LEN) return "";
+  if (token.length < LANG.minLen) return "";
   var first = token.charAt(0);
   if (first !== first.toLowerCase()) return "";          // capitalised: names, sentence starts
-  var w = token.toLowerCase().replace(/’/g, "'");
+  var w = LANG.norm(token);
   var r = rank.get(w);
   if (r === undefined) {
     if (token.indexOf("-") !== -1 || token.length < 6) return "";  // unknown hyphenated or short: skip
     return hideCognates && isCognate(token) ? "" : "C1";
   }
-  if (r <= KNOWN_MAX) return "";
+  if (r <= LANG.knownMax) return "";
   if (hideCognates && isCognate(token)) return "";
-  return r <= B2_MAX ? "B2" : "C1";
+  return r <= LANG.b2Max ? "B2" : "C1";
 }
 
 // ---------- Rendering (DOM only, never innerHTML with article text) ----------
 var count = 0, xcount = 0;
 function addWords(parent, text) {
   var last = 0, m;
-  TOKEN.lastIndex = 0;
-  while ((m = TOKEN.exec(text))) {
+  LANG.token.lastIndex = 0;
+  while ((m = LANG.token.exec(text))) {
     var lvl = rank ? levelOf(m[0]) : "";
     if (!lvl) continue;
     if (m.index > last) parent.appendChild(document.createTextNode(text.slice(last, m.index)));
@@ -417,7 +395,7 @@ function render(a) {
   var parts = [];
   if (a.credit) parts.push(document.createTextNode(a.credit));
   else {
-    if (a.author) parts.push(document.createTextNode("Par " + a.author));
+    if (a.author) parts.push(document.createTextNode((LANG.by || "By") + " " + a.author));
     if (a.source) parts.push(document.createTextNode(a.source));
     var link = a.url ? safeUrl(a.url) : "";
     if (link) {
@@ -434,41 +412,44 @@ function render(a) {
   $("xcount").textContent = xcount;
 }
 
-var SAMPLE = {
-  title: "Dans les Alpes, les stations de ski misent sur l’été pour survivre au réchauffement",
-  dek: "Faute d’un enneigement suffisant, plusieurs communes de montagne repensent leur modèle économique et peinent à convaincre leurs habitants.",
-  credit: "Texte d’exemple · Société",
-  paras: [
-    "Depuis trois hivers, le constat est sans appel : la neige se fait de plus en plus rare à basse altitude. À Saint-Aubin-des-Cimes, petite station de Haute-Savoie, la moitié des remontées mécaniques est restée à l’arrêt durant la dernière saison. Le maire, Étienne Marchand, reconnaît que la commune a longtemps sous-estimé l’ampleur du phénomène.",
-    "« Nous avons trop tardé à diversifier notre offre », admet-il. Le conseil municipal a donc approuvé un plan de reconversion qui prévoit l’aménagement de sentiers de randonnée, d’un parc d’accrobranche et d’un centre de bien-être. Les premiers travaux devraient s’achèver d’ici l’an prochain, à condition que les subventions promises par la région soient bel et bien versées.",
-    "Ce virage ne fait pas l’unanimité. Certains commerçants redoutent que la clientèle estivale, moins dépensière, ne compense jamais le manque à gagner de l’hiver. D’autres reprochent aux élus d’avoir ignoré trop longtemps les alertes des scientifiques. « On nous a rassurés pendant des années, alors que les chiffres étaient inquiétants », déplore une hôtelière.",
-    "Reste une inconnue de taille : l’attitude des touristes eux-mêmes. Selon une enquête menée auprès de 2 000 visiteurs, une majorité se dit prête à venir en été, mais seulement si les prix demeurent abordables. Pour les élus, l’enjeu est désormais de préserver l’équilibre fragile entre attractivité et respect de l’environnement."
-  ]
-};
+// ---------- Starting up and switching languages ----------
+var langSel = $("lang");
+Object.keys(LANGS).forEach(function (code) {
+  var o = document.createElement("option");
+  o.value = code; o.textContent = LANGS[code].label;
+  langSel.appendChild(o);
+});
+function savedLang() { try { return localStorage.getItem("reader-lang"); } catch (e) { return null; } }
+function saveLang(c) { try { localStorage.setItem("reader-lang", c); } catch (e) { /* storage unavailable */ } }
+function showSample() { render(LANG.sample); modeEl.textContent = LANG.sampleLabel; }
 
-rankReady.then(function () { render(SAMPLE); }).catch(function () {
-  render(SAMPLE);
-  setStatus("The word list did not load, so no words are underlined.", true);
+var startCode = LANGS[savedLang()] ? savedLang() : (LANGS.fr ? "fr" : Object.keys(LANGS)[0]);
+setLanguage(startCode).then(showSample);
+
+langSel.addEventListener("change", function () {
+  var code = langSel.value;
+  saveLang(code);
+  setStatus("");
+  setLanguage(code).then(function () {
+    if (lastArticle && lastArticle.fetched) render(lastArticle); else showSample();
+  });
 });
 
 // ---------- Definitions from Wiktionary ----------
 var defCache = new Map();
 
-function plain(html) {
-  var d = new DOMParser().parseFromString(html || "", "text/html");
-  d.querySelectorAll("ul, ol, dl, style, sup").forEach(function (n) { n.remove() });
-  return (d.body.textContent || "").replace(/\s+/g, " ").trim();
-}
-
-function wikt(term) {
-  return fetch("https://en.wiktionary.org/api/rest_v1/page/definition/" + encodeURIComponent(term), { headers: { accept: "application/json" } })
+function wiktFetch(host, term) {
+  return fetch("https://" + host + ".wiktionary.org/api/rest_v1/page/definition/" + encodeURIComponent(term), { headers: { accept: "application/json" } })
     .then(function (r) { return r.ok ? r.json() : null; })
     .catch(function () { return null; });
 }
+function wikt(term) { return wiktFetch("en", term); }            // English Wiktionary: definitions in English
+function wiktNative(term) { return wiktFetch(LANG.wikt, term); } // the language's own Wiktionary: definitions in that language
 
-var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)-person|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated)\b/i;
+// Wording that marks "<grammar> of <other word>" lines, as English Wiktionary writes them for every language.
+var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)-person|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|preterite|preterit|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|enclitic|diminutive|augmentative|superlative|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated|informal|formal|apocopic|contraction|misspelling)\b/i;
 var NOISE_TITLE = /^(Appendix:|Wiktionary:|Template:|Category:|Special:|w:|wikipedia:)/i;
-var VERB_FORM = /(participle|person|subjunctive|indicative|imperative|conditional|gerund)/i;
+var VERB_FORM = /(participle|person|subjunctive|indicative|imperative|conditional|gerund|preterite|preterit)/i;
 
 // Reads one Wiktionary definition. If it only says "<grammar> of <other word>", returns the candidate base words.
 function parseDef(html) {
@@ -506,31 +487,13 @@ function pickDefs(entries, max) {
   return out;
 }
 
-// Last-resort guesses at the infinitive from the ending of an inflected form.
-function guessLemmas(w) {
-  var ends = [["ées","er"],["ée","er"],["és","er"],["é","er"],["ent","er"],["es","er"],["e","er"],["ons","er"],["ez","er"],["ant","er"],
-              ["issent","ir"],["issant","ir"],["ies","ir"],["ie","ir"],["is","ir"],["i","ir"],
-              ["ues","re"],["ue","re"],["us","re"],["u","re"],["ites","ire"],["ite","ire"],["its","ire"],["it","ire"]];
-  var out = [];
-  ends.forEach(function (p) {
-    if (w.length > p[0].length + 2 && w.slice(-p[0].length) === p[0]) out.push(w.slice(0, -p[0].length) + p[1]);
-  });
-  return out;
-}
-
-function wiktFr(term) {
-  return fetch("https://fr.wiktionary.org/api/rest_v1/page/definition/" + encodeURIComponent(term), { headers: { accept: "application/json" } })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .catch(function () { return null; });
-}
-
 // Try each candidate base word until one gives real definitions. When a page only points to yet another
 // word (feminine -> masculine participle -> infinitive), follow that pointer too.
 function baseDefinitions(cands, verbish) {
-  var visited = {}, budget = 8;
+  var visited = {}, budget = 8, L = LANG;
   function pick(entries) {
     if (verbish) {
-      var v = entries.filter(function (e) { return /verb|verbe/i.test(e.partOfSpeech || ""); });
+      var v = entries.filter(function (e) { return /verb/i.test(e.partOfSpeech || ""); });
       if (v.length) entries = v;
     }
     return pickDefs(entries, 3);
@@ -541,7 +504,7 @@ function baseDefinitions(cands, verbish) {
     var c = queue.shift();
     visited[c.toLowerCase()] = 1; budget--;
     return wikt(c).then(function (d2) {
-      var entries = (d2 && d2.fr) || [];
+      var entries = (d2 && d2[L.wikt]) || [];
       var defs = pick(entries);
       if (defs.length) return { lemma: c, defs: defs };
       var deeper = [];
@@ -554,24 +517,24 @@ function baseDefinitions(cands, verbish) {
       return next(deeper.concat(queue));
     });
   }
-  function frFallback(i) {
+  function nativeFallback(i) {
     if (i >= Math.min(cands.length, 2)) return Promise.resolve(null);
-    return wiktFr(cands[i]).then(function (d2) {
-      var defs = pick((d2 && d2.fr) || []);
-      return defs.length ? { lemma: cands[i], defs: defs.map(function (x) { return { pos: x.pos, text: x.text + " (in French)" }; }) } : frFallback(i + 1);
+    return wiktNative(cands[i]).then(function (d2) {
+      var defs = pick((d2 && d2[L.wikt]) || []);
+      return defs.length ? { lemma: cands[i], defs: defs.map(function (x) { return { pos: x.pos, text: x.text + " (in " + L.name + ")" }; }) } : nativeFallback(i + 1);
     });
   }
-  return next(cands.slice()).then(function (r) { return r || frFallback(0); });
+  return next(cands.slice()).then(function (r) { return r || nativeFallback(0); });
 }
 
 function lookup(word) {
-  var key = word.toLowerCase().replace(/’/g, "'");
-  if (defCache.has(key)) return defCache.get(key);
+  var L = LANG, key = L.norm(word), ck = L.code + ":" + key;
+  if (defCache.has(ck)) return defCache.get(ck);
   var p = wikt(key).then(function (data) {
-    var fr = data && data.fr;
-    if (!fr || !fr.length) return { none: true };
+    var entries = data && data[L.wikt];
+    if (!entries || !entries.length) return { none: true };
     var own = [], forms = [];
-    fr.forEach(function (e) {
+    entries.forEach(function (e) {
       (e.definitions || []).forEach(function (d) {
         var x = parseDef(d.definition);
         if (!x.text) return;
@@ -582,14 +545,14 @@ function lookup(word) {
 
     // An inflected form (for example a past participle): show the base word's real definitions.
     var base = forms[0];
-    var cands = base.cands.filter(function (c) { return c.toLowerCase() !== key; }).concat(guessLemmas(key));
+    var cands = base.cands.filter(function (c) { return c.toLowerCase() !== key; }).concat(L.guessLemmas(key));
     return baseDefinitions(cands, VERB_FORM.test(base.text)).then(function (got) {
       if (!got) return { lemma: cands[0] || key, form: base.text, defs: own.slice(0, 3), pos: own[0] ? own[0].pos : "", missing: true };
       var defs = own.slice(0, 2).concat(got.defs).slice(0, 4);
       return { lemma: got.lemma, form: base.text, defs: defs, pos: got.defs[0] ? got.defs[0].pos : "" };
     });
   });
-  defCache.set(key, p);
+  defCache.set(ck, p);
   return p;
 }
 
@@ -741,16 +704,16 @@ var BOILERPLATE = [
   /inscrivez-vous gratuitement/i, /connectez-vous/i, /d[ée]j[àa] abonn[ée]/i, /accepter et continuer/i,
   /^(se connecter|s['’]abonner|abonnez-vous|s['’]inscrire|inscrivez-vous|lire plus tard|partager|r[ée]utiliser ce contenu|ajouter aux favoris|offrir cet article|voir plus|lire la suite|lire aussi|lire également|à lire aussi|sur le même sujet|publicit[ée]|newsletter|contribuer)\b/i
 ];
-var LOGIN_WORDS = /(connectez-vous|se connecter|abonnez-vous|s['’]abonner|inscrivez-vous|s['’]inscrire|r[ée]serv[ée] aux abonn|cet article vous est offert|lecture (offerte|r[ée]serv)|newsletter)/i;
 function tidy(s) {
   return String(s || "").normalize("NFKC").replace(/[​-‍⁠﻿­]/g, "").replace(/\s+/g, " ").trim();
 }
-function isBoilerplate(t) {
-  return BOILERPLATE.some(function (re) { return re.test(t); }) || (t.length < 200 && LOGIN_WORDS.test(t));
+// Paywall, login and promo lines that sit inside the article body (the word lists live in langs/<code>.js).
+function isBoilerplate(t, L) {
+  return L.boilerplate.some(function (re) { return re.test(t); }) || (t.length < 200 && L.loginWords.test(t));
 }
-function cleanParas(paras) {
+function cleanParas(paras, L) {
   return paras.map(tidy).filter(function (t) {
-    if (isBoilerplate(t)) return false;
+    if (isBoilerplate(t, L)) return false;
     if (t.length < 50 && !/[.!?…»"”)]$/.test(t)) return false;   // short fragments such as menu labels and captions
     return true;
   });
@@ -763,8 +726,9 @@ function extract(html, url) {
   var authors = jsonLdAuthors(doc);
   var metaAuthor = metaContent(doc, "author", "article:author");
   var lang = (doc.documentElement.getAttribute("lang") || metaContent(doc, "og:locale") || "").toLowerCase();
+  var code = pickLang(lang), L = LANGS[code];
   var dek = tidy(metaContent(doc, "og:description", "description"));
-  if (isBoilerplate(dek)) dek = "";
+  if (isBoilerplate(dek, L)) dek = "";
   var h1 = doc.querySelector("h1");
 
   var art = new Readability(doc.cloneNode(true)).parse();
@@ -772,23 +736,23 @@ function extract(html, url) {
   var body = new DOMParser().parseFromString(art.content, "text/html");
   var paras = Array.prototype.map.call(body.querySelectorAll("p, blockquote"), function (n) { return n.textContent.replace(/\s+/g, " ").trim(); })
     .filter(function (t) { return t.length > 1; });
-  paras = cleanParas(paras);
+  paras = cleanParas(paras, L);
 
   var author = authors.join(", ") || (art.byline || metaAuthor || "").replace(/^\s*(par|by)\s+/i, "").trim();
   var notes = [];
-  if (lang && lang.indexOf("fr") !== 0) notes.push("This page does not look like it is in French.");
+  if (lang && !LANGS[lang.slice(0, 2)]) notes.push("This page's language (" + lang.slice(0, 2) + ") is not supported yet, so the " + L.name + " word list is used.");
   if (paras.join(" ").length < 900) notes.push("Only a short text came back. The article may be behind a paywall or login.");
 
   return {
     title: metaContent(doc, "og:title") || (h1 && h1.textContent.replace(/\s+/g, " ").trim()) || art.title,
-    author: author, source: source, url: url, dek: dek, paras: paras, notice: notes.join(" ")
+    author: author, source: source, url: url, dek: dek, paras: paras, notice: notes.join(" "), langCode: code, fetched: true
   };
 }
 
 $("load").addEventListener("submit", function (ev) {
   ev.preventDefault();
   var url = $("f-url").value.trim();
-  var proxy = (window.FRENCH_READER && window.FRENCH_READER.proxyUrl || "").replace(/\/+$/, "");
+  var proxy = (window.NEWS_READER && window.NEWS_READER.proxyUrl || "").replace(/\/+$/, "");
   if (!proxy) { setStatus("Link loading is not set up yet. Add your proxy address to config.js (see the README).", true); return; }
   goBtn.disabled = true;
   setStatus("Fetching the article…");
@@ -799,7 +763,7 @@ $("load").addEventListener("submit", function (ev) {
       if (!r.ok) return r.text().then(function (t) { throw new Error(t || "Could not fetch that page."); });
       return r.text();
     })
-    .then(function (html) { return rankReady.then(function () { return extract(html, finalUrl); }); })
+    .then(function (html) { var a = extract(html, finalUrl); saveLang(a.langCode); return setLanguage(a.langCode).then(function () { return a; }); })
     .then(function (a) {
       if (!a.paras.length) throw new Error("No readable text was found on that page.");
       modeEl.textContent = "Reading: " + a.source;
