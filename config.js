@@ -8,7 +8,7 @@
     staging: "https://french-reader-proxy-staging.sejoyce.workers.dev",
     local: "http://localhost:8787"
   };
-  window.FRENCH_READER = { proxyUrl: PROXIES[env], env: env };
+  window.NEWS_READER = { proxyUrl: PROXIES[env], env: env };
   if (env !== "production") {
     document.title += " (" + env + ")";
     document.addEventListener("DOMContentLoaded", function () {

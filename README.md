@@ -30,7 +30,7 @@ worker/                  the Cloudflare Worker
 ### 1. Put the Worker online (Cloudflare, free)
 
 1. Make a new empty folder outside your repository and put only `worker.js` in it.
-2. Run: `npx wrangler deploy worker.js --name french-reader-proxy --compatibility-date 2025-01-01 --var ALLOWED_ORIGIN:https://yourname.github.io`
+2. Run: `npx wrangler deploy worker.js --name news-reader-proxy --compatibility-date 2025-01-01 --var ALLOWED_ORIGIN:https://yourname.github.io`
 3. Copy the address Wrangler prints.
 
 ### 2. Put the page online (GitHub Pages)

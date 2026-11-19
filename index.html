@@ -752,7 +752,7 @@ function extract(html, url) {
 $("load").addEventListener("submit", function (ev) {
   ev.preventDefault();
   var url = $("f-url").value.trim();
-  var proxy = (window.FRENCH_READER && window.FRENCH_READER.proxyUrl || "").replace(/\/+$/, "");
+  var proxy = (window.NEWS_READER && window.NEWS_READER.proxyUrl || "").replace(/\/+$/, "");
   if (!proxy) { setStatus("Link loading is not set up yet. Add your proxy address to config.js (see the README).", true); return; }
   goBtn.disabled = true;
   setStatus("Fetching the article…");
