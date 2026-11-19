@@ -4,8 +4,8 @@
   var env = (host === "localhost" || host === "127.0.0.1") ? "local"
           : /\/staging(\/|$)/.test(path) ? "staging" : "production";
   var PROXIES = {
-    production: "https://french-reader-proxy.sejoyce.workers.dev",
-    staging: "https://french-reader-proxy-staging.sejoyce.workers.dev",
+    production: "https://news-reader-proxy.sejoyce.workers.dev",
+    staging: "https://news-reader-proxy-staging.sejoyce.workers.dev",
     local: "http://localhost:8787"
   };
   window.NEWS_READER = { proxyUrl: PROXIES[env], env: env };
