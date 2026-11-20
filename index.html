@@ -139,16 +139,32 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
 #tip li + li { margin-top: 2px; }
 #tip .dim { color: var(--tip-dim); margin-top: 6px; }
 
-#today { margin-top: 20px; font-family: var(--sans); }
-#today h2 { font-size: 0.9375rem; margin: 0 0 4px; }
-#today .note { margin: 0 0 8px; font-size: 0.8125rem; color: var(--muted); }
-#today ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+/* Today's articles: a collapsible box on narrow screens, a fixed sidebar in the empty margin on wide ones. */
+#today { margin-top: 16px; font-family: var(--sans); border: 1px solid var(--rule); }
+#today summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; padding: 10px 12px; font-size: 0.9375rem; font-weight: 600; list-style: none; }
+#today summary::-webkit-details-marker { display: none; }
+#today summary::after { content: "+"; font-weight: 400; font-size: 1.25rem; line-height: 1; color: var(--muted); }
+#today[open] summary::after { content: "\2013"; }
+#today summary:focus-visible { outline: 2px solid var(--hl); outline-offset: -2px; }
+#today-n { margin-left: auto; font-weight: 400; color: var(--muted); }
+#today .note { margin: 0; padding: 0 12px 8px; font-size: 0.8125rem; color: var(--muted); }
+#today ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); max-height: 55vh; overflow-y: auto; }
 #today li { border-bottom: 1px solid var(--rule); }
-#today button.sug { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 10px 2px; font: inherit; color: var(--fg); cursor: pointer; }
+#today li:last-child { border-bottom: 0; }
+#today button.sug { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 10px 12px; font: inherit; color: var(--fg); cursor: pointer; }
 #today button.sug:hover .t, #today button.sug:focus-visible .t { text-decoration: underline; }
 #today button.sug:focus-visible { outline: 2px solid var(--hl); outline-offset: -2px; }
-#today .t { display: block; font-family: var(--serif, inherit); font-size: 1rem; line-height: 1.35; }
+#today .t { display: block; font-family: var(--serif); font-size: 1rem; line-height: 1.35; }
 #today .m { display: block; margin-top: 2px; font-size: 0.75rem; color: var(--muted); }
+
+@media (min-width: 1180px) {
+  #today { position: fixed; top: 24px; left: calc(50% + 19rem + 28px); width: 16rem; margin: 0; max-height: calc(100vh - 48px); overflow-y: auto; border: 0; border-left: 1px solid var(--rule); }
+  #today summary { cursor: default; padding: 0 0 4px 16px; }
+  #today summary::after { display: none; }
+  #today .note { padding: 0 0 8px 16px; }
+  #today ul { max-height: none; overflow: visible; border-top: 0; }
+  #today button.sug { padding: 10px 0 10px 16px; }
+}
 
 .foot { font-family: var(--sans); font-size: 0.8125rem; line-height: 1.5; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 12px; margin-top: 36px; }
 .foot a { color: var(--fg); }
@@ -180,11 +196,11 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
     <p id="status" role="status" aria-live="polite"></p>
   </form>
 
-  <section id="today" hidden aria-label="Today's articles">
-    <h2 id="today-h"></h2>
+  <details id="today" hidden>
+    <summary><span id="today-h"></span><span id="today-n"></span></summary>
     <p class="note" id="today-note" role="status"></p>
     <ul id="today-list"></ul>
-  </section>
+  </details>
 
   <article id="article"></article>
 
@@ -464,6 +480,13 @@ window.addEventListener("hashchange", function () { var c = hashLang(); if (c &&
 // Reads the language's news feeds through the same proxy and lists what was published today.
 var todayEl = $("today"), todayList = $("today-list"), todayNote = $("today-note"), todayCode = null;
 
+// On wide screens the list is a sidebar that is always open; on narrow ones it is a box the reader opens.
+var wide = window.matchMedia("(min-width: 1180px)");
+function syncToday() { todayEl.open = wide.matches; }
+syncToday();
+if (wide.addEventListener) wide.addEventListener("change", syncToday); else wide.addListener(syncToday);
+todayEl.querySelector("summary").addEventListener("click", function (e) { if (wide.matches) e.preventDefault(); });
+
 function proxyBase() { var c = window.NEWS_READER || window.FRENCH_READER || {}; return (c.proxyUrl || "").replace(/\/+$/, ""); }
 
 function feedItems(xml, feed) {
@@ -503,11 +526,13 @@ function showToday(items, ok, total, L) {
     b.appendChild(t); b.appendChild(m);
     b.addEventListener("click", function () {
       $("f-url").value = i.link;
+      if (!wide.matches) todayEl.open = false;   // on a phone, fold the list away so the article is in view
       var f = $("load");
       if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true }));
     });
     li.appendChild(b); todayList.appendChild(li);
   });
+  $("today-n").textContent = list.length ? String(list.length) : "";
 }
 
 function loadToday() {
@@ -579,8 +604,7 @@ function parseDef(html) {
 }
 
 // Real definitions only: skips lines that just point to another word.
-// Definitions a learner does not need to meet by accident are skipped when the word has other, more accurate meanings.
-// Acts as a filter for explicit content.
+// Senses a learner does not need to meet by accident are skipped when the word has other senses.
 // The word list is stored only as hashes (data/hidden_terms.js), so no such words appear in this repository.
 function h53(str) {
   var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
