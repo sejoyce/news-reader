@@ -604,7 +604,8 @@ function parseDef(html) {
 }
 
 // Real definitions only: skips lines that just point to another word.
-// Senses a learner does not need to meet by accident are skipped when the word has other senses.
+// Definitions a learner does not need to meet by accident are skipped when the word has other, more accurate meanings.
+// Acts as a filter for explicit content.
 // The word list is stored only as hashes (data/hidden_terms.js), so no such words appear in this repository.
 function h53(str) {
   var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
