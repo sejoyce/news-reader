@@ -123,6 +123,13 @@ window.LANGS.fr = {
   verbForms: VERB_FORMS,
   infEnding: /(er|ir|re)$/,
   tokenMap: { de: "(?:des|du|de|d['’])" },
+  // News feeds used for the "Today's articles" list. A feed that cannot be loaded is skipped.
+  feeds: [
+    { name: "Le Monde", url: "https://www.lemonde.fr/rss/une.xml" },
+    { name: "20 Minutes", url: "https://www.20minutes.fr/feeds/rss-une.xml" },
+    { name: "Ouest-France", url: "https://www.ouest-france.fr/rss/une" },
+    { name: "La Croix", url: "https://www.la-croix.com/feeds/rss/site.xml" }
+  ],
   sample: SAMPLE_FR,
   sampleLabel: "Sample article written for this prototype"
 };

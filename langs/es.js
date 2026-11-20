@@ -169,6 +169,13 @@ window.LANGS.es = {
   verbForms: VERB_FORMS,
   infEnding: /(ar|er|ir|ír)$/,
   tokenMap: { de: "(?:del|de)", a: "(?:al|a)" },
+  // News feeds used for the "Today's articles" list. A feed that cannot be loaded is skipped.
+  feeds: [
+    { name: "BBC Mundo", url: "https://feeds.bbci.co.uk/mundo/rss.xml" },
+    { name: "elDiario.es", url: "https://www.eldiario.es/rss" },
+    { name: "El Mundo", url: "https://e00-elmundo.uecdn.es/rss/portada.xml" },
+    { name: "El Diario NY", url: "https://eldiariony.com/feed/" }
+  ],
   sample: SAMPLE_ES,
   sampleLabel: "Texto de ejemplo escrito para este prototipo"
 };
