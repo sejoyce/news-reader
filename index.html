@@ -268,7 +268,7 @@ function compileExpr(it, L) {
         parts.push(re);
       });
     });
-    var src = "(?<![\\p{L}\\p{N}])" + parts.join("(?:\\s+|(?<=['’]))") + "(?:(?<=['’])|(?![\\p{L}\\p{N}]))";
+    var src = "(?<![\\p{L}\\p{N}]|[\\p{L}][-\u2010\u2011])" + parts.join("(?:\\s+|(?<=['’]))") + "(?:(?<=['’])|(?![\\p{L}\\p{N}]|[-\u2010\u2011]\\p{L}))";
     new RegExp(src, "iu");
     return { src: src, re: null, needle: lit.length >= 3 ? lit.toLowerCase() : "", def: it.d, lvl: it.l, show: it.s || it.p.replace(/~/g, "") };
   } catch (e) { return null; }
@@ -316,7 +316,7 @@ function updateDiag() {
   if (!d || !LANG) return;
   d.textContent = " Language: " + LANG.name + ". Word lists: " + LANG.name + " " + (rank ? rank.size.toLocaleString("en-US") : "NOT LOADED (expected at " + LANG.words + ")") +
     ", English " + (en ? en.size.toLocaleString("en-US") : "NOT FOUND (expected at data/en_words.txt)") +
-    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 10.";
+    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 11.";
 }
 
 function setLanguage(code) {
@@ -747,7 +747,7 @@ function fillTip(word, lvl, info) {
   tip.textContent = "";
   if (!info) { tip.appendChild(head(word, "", lvl)); tip.appendChild(note("Loading definition…")); return; }
   if (info.none || !info.defs.length) {
-    tip.appendChild(head(info.lemma && info.form ? info.lemma : word, "", lvl));
+    tip.appendChild(head(word, "", lvl));
     if (info.form) {
       var ff = document.createElement("div"); ff.className = "from"; ff.textContent = word + ": " + info.form; tip.appendChild(ff);
       tip.appendChild(note("No definition found for \u201c" + info.lemma + "\u201d on Wiktionary."));
@@ -756,8 +756,9 @@ function fillTip(word, lvl, info) {
     }
     return;
   }
-  tip.appendChild(head(info.lemma, info.pos, lvl));
-  if (info.form) { var f = document.createElement("div"); f.className = "from"; f.textContent = word + ": " + info.form; tip.appendChild(f); }
+  // The heading is the word exactly as written in the article; the base word it comes from goes on the line below.
+  tip.appendChild(head(word, info.pos, lvl));
+  if (info.form) { var f = document.createElement("div"); f.className = "from"; f.textContent = "base word: " + info.lemma + (/^form of /.test(info.form) ? "" : " (" + info.form + ")"); tip.appendChild(f); }
   var ol = document.createElement("ol");
   info.defs.forEach(function (d) { var li = document.createElement("li"); li.textContent = d.text; ol.appendChild(li); });
   tip.appendChild(ol);
