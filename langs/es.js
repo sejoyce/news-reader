@@ -72,8 +72,14 @@ var GUESS = [["aron","ar"],["ó","ar"],["ado","ar"],["ada","ar"],["ados","ar"],[
   ["idos","ir"],["idas","er"],["idas","ir"],["iendo","er"],["iendo","ir"],["ía","er"],["ía","ir"],["ían","er"],["ían","ir"],["erá","er"],
   ["irá","ir"],["erán","er"],["irán","ir"],["ería","er"],["iría","ir"],["en","er"],["en","ir"],["e","er"],["e","ir"],["es","er"],["es","ir"],
   ["o","ar"],["o","er"],["o","ir"],["emos","er"],["imos","ir"]];
+// An infinitive or gerund with pronouns attached (tragarse, dándole, comérselo): the base word without them.
+var CLITICS = "(?:se|me|te|nos|os|lo|la|los|las|le|les)";
+var CLITIC_INF = new RegExp("^(.{2,}?(?:ar|er|ir|ír))(" + CLITICS + "+)$");
+var CLITIC_GER = new RegExp("^(.+?)(ándo|iéndo|yéndo)(" + CLITICS + "+)$");
 function guessLemmas(w) {
-  var out = [];
+  var out = [], m;
+  if ((m = CLITIC_GER.exec(w))) return guessLemmas(m[1] + m[2].replace("á", "a").replace("é", "e"));
+  if ((m = CLITIC_INF.exec(w))) out.push(m[1].replace(/ír$/, "ir"));
   GUESS.forEach(function (p) {
     if (w.length > p[0].length + 2 && w.slice(-p[0].length) === p[0]) out.push(w.slice(0, -p[0].length) + p[1]);
   });
@@ -82,7 +88,7 @@ function guessLemmas(w) {
 
 // ---------- Paywall, login and promo lines that sit inside the article body ----------
 var BOILERPLATE = [
-  /suscr[ií]be(te)?\b/i, /inicia(r)? sesi[óo]n/i, /reg[ií]strate/i, /solo (para )?suscriptores/i, /exclusivo para suscriptores/i,
+  /suscr[ií]be(te)?\b/i, /inicia(r)? sesi[óo]n/i, /reg[ií]strate/i, /solo (para )?suscriptores/i, /exclusivo para suscriptores/i, /^te queda(n)? [\d.,\s]*% (del|de este) art[ií]culo/i,
   /ya (soy|eres) suscriptor/i, /art[ií]culo (exclusivo|reservado|de pago)/i, /hazte (con )?(una )?suscripci[óo]n/i,
   /^(lee tambi[ée]n|lea tambi[ée]n|te puede interesar|ver m[aá]s|publicidad|compartir|newsletter|leer m[aá]s tarde|comentarios?|seguir leyendo|contin[uú]a leyendo)\b/i
 ];
@@ -169,6 +175,13 @@ window.LANGS.es = {
   verbForms: VERB_FORMS,
   infEnding: /(ar|er|ir|ír)$/,
   tokenMap: { de: "(?:del|de)", a: "(?:al|a)" },
+  // News feeds used for the "Today's articles" list. A feed that cannot be loaded is skipped.
+  feeds: [
+    { name: "BBC Mundo", url: "https://feeds.bbci.co.uk/mundo/rss.xml" },
+    { name: "elDiario.es", url: "https://www.eldiario.es/rss" },
+    { name: "El Mundo", url: "https://e00-elmundo.uecdn.es/rss/portada.xml" },
+    { name: "El Diario NY", url: "https://eldiariony.com/feed/" }
+  ],
   sample: SAMPLE_ES,
   sampleLabel: "Texto de ejemplo escrito para este prototipo"
 };

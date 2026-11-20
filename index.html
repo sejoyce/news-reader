@@ -139,6 +139,35 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
 #tip li + li { margin-top: 2px; }
 #tip .dim { color: var(--tip-dim); margin-top: 6px; }
 
+/* Today's articles: a collapsible box on narrow screens, a fixed sidebar in the empty margin on wide ones. */
+#today { margin-top: 16px; font-family: var(--sans); border: 1px solid var(--rule); }
+#today summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; padding: 10px 12px; font-size: 0.9375rem; font-weight: 600; list-style: none; }
+#today summary::-webkit-details-marker { display: none; }
+#today summary::after { content: "+"; font-weight: 400; font-size: 1.25rem; line-height: 1; color: var(--muted); }
+#today[open] summary::after { content: "\2013"; }
+#today summary:focus-visible { outline: 2px solid var(--hl); outline-offset: -2px; }
+#today-n { margin-left: auto; font-weight: 400; color: var(--muted); }
+#today .note { margin: 0; padding: 0 12px 8px; font-size: 0.8125rem; color: var(--muted); }
+#today ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); max-height: 55vh; overflow-y: auto; }
+#today li { border-bottom: 1px solid var(--rule); }
+#today li:last-child { border-bottom: 0; }
+#today button.sug { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 10px 12px; font: inherit; color: var(--fg); cursor: pointer; }
+#today button.sug:hover .t, #today button.sug:focus-visible .t { text-decoration: underline; }
+#today button.sug:focus-visible { outline: 2px solid var(--hl); outline-offset: -2px; }
+#today .t { display: block; font-family: var(--serif); font-size: 1rem; line-height: 1.35; }
+#today .m { display: block; margin-top: 2px; font-size: 0.75rem; color: var(--muted); }
+
+@media (min-width: 1180px) {
+  /* The sidebar (16rem) and the article column (38rem) are centred together, with a 2.5rem gap, so both sides of the page are equally empty. */
+  main { position: relative; left: 148px; }
+  #today { position: fixed; top: 24px; left: calc(50% - 28.25rem); width: 16rem; box-sizing: border-box; margin: 0; max-height: calc(100vh - 48px); overflow-y: auto; border: 0; border-right: 1px solid var(--rule); }
+  #today summary { cursor: default; padding: 0 16px 4px 0; }
+  #today summary::after { display: none; }
+  #today .note { padding: 0 16px 8px 0; }
+  #today ul { max-height: none; overflow: visible; border-top: 0; }
+  #today button.sug { padding: 10px 16px 10px 0; }
+}
+
 .foot { font-family: var(--sans); font-size: 0.8125rem; line-height: 1.5; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 12px; margin-top: 36px; }
 .foot a { color: var(--fg); }
 </style>
@@ -169,6 +198,12 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
     <p id="status" role="status" aria-live="polite"></p>
   </form>
 
+  <details id="today" hidden>
+    <summary><span id="today-h"></span><span id="today-n"></span></summary>
+    <p class="note" id="today-note" role="status"></p>
+    <ul id="today-list"></ul>
+  </details>
+
   <article id="article"></article>
 
   <p class="foot">
@@ -181,6 +216,7 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
 
 <script src="vendor/Readability.js"></script>
 <script src="config.js"></script>
+<script src="data/hidden_terms.js"></script>
 <script src="langs/fr.js"></script>
 <script src="langs/es.js"></script>
 <script>
@@ -280,7 +316,7 @@ function updateDiag() {
   if (!d || !LANG) return;
   d.textContent = " Language: " + LANG.name + ". Word lists: " + LANG.name + " " + (rank ? rank.size.toLocaleString("en-US") : "NOT LOADED (expected at " + LANG.words + ")") +
     ", English " + (en ? en.size.toLocaleString("en-US") : "NOT FOUND (expected at data/en_words.txt)") +
-    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 8.";
+    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 10.";
 }
 
 function setLanguage(code) {
@@ -423,17 +459,111 @@ function savedLang() { try { return localStorage.getItem("reader-lang"); } catch
 function saveLang(c) { try { localStorage.setItem("reader-lang", c); } catch (e) { /* storage unavailable */ } }
 function showSample() { render(LANG.sample); modeEl.textContent = LANG.sampleLabel; }
 
-var startCode = LANGS[savedLang()] ? savedLang() : (LANGS.fr ? "fr" : Object.keys(LANGS)[0]);
-setLanguage(startCode).then(showSample);
+// The address ends in #fr or #es, so each language has its own link that can be bookmarked.
+function hashLang() { var h = (location.hash || "").replace("#", ""); return LANGS[h] ? h : null; }
+function syncHash() { try { if (LANG && hashLang() !== LANG.code) history.replaceState(null, "", "#" + LANG.code); } catch (e) { /* ignore */ } }
 
-langSel.addEventListener("change", function () {
-  var code = langSel.value;
+var startCode = hashLang() || (LANGS[savedLang()] ? savedLang() : (LANGS.fr ? "fr" : Object.keys(LANGS)[0]));
+setLanguage(startCode).then(function () { showSample(); syncHash(); loadToday(); });
+
+function switchTo(code) {
   saveLang(code);
   setStatus("");
-  setLanguage(code).then(function () {
+  return setLanguage(code).then(function () {
     if (lastArticle && lastArticle.fetched) render(lastArticle); else showSample();
+    syncHash();
+    loadToday();
   });
-});
+}
+langSel.addEventListener("change", function () { switchTo(langSel.value); });
+window.addEventListener("hashchange", function () { var c = hashLang(); if (c && LANG && c !== LANG.code) switchTo(c); });
+
+// ---------- Today's articles ----------
+// Reads the language's news feeds through the same proxy and lists what was published today.
+var todayEl = $("today"), todayList = $("today-list"), todayNote = $("today-note"), todayCode = null;
+
+// On wide screens the list is a sidebar that is always open; on narrow ones it is a box the reader opens.
+var wide = window.matchMedia("(min-width: 1180px)");
+function syncToday() { todayEl.open = wide.matches; }
+syncToday();
+if (wide.addEventListener) wide.addEventListener("change", syncToday); else wide.addListener(syncToday);
+todayEl.querySelector("summary").addEventListener("click", function (e) { if (wide.matches) e.preventDefault(); });
+
+function proxyBase() { var c = window.NEWS_READER || window.FRENCH_READER || {}; return (c.proxyUrl || "").replace(/\/+$/, ""); }
+
+function feedItems(xml, feed) {
+  var doc = new DOMParser().parseFromString(xml, "text/xml");
+  if (doc.querySelector("parsererror")) return [];
+  var nodes = Array.prototype.slice.call(doc.getElementsByTagName("item")), atom = false;
+  if (!nodes.length) { nodes = Array.prototype.slice.call(doc.getElementsByTagName("entry")); atom = true; }
+  var items = nodes.map(function (n) {
+    function t(name) { var e = n.getElementsByTagName(name)[0]; return e ? e.textContent.trim() : ""; }
+    var le = n.querySelector("link[rel='alternate']") || n.getElementsByTagName("link")[0];
+    var link = atom ? (le && le.getAttribute("href") || "") : t("link");
+    var when = Date.parse(t("pubDate") || t("published") || t("updated") || t("dc:date"));
+    return { title: t("title").replace(/\s+/g, " "), link: link, time: isNaN(when) ? 0 : when, source: feed.name };
+  }).filter(function (i) { return i.title && /^https?:\/\//i.test(i.link); });
+  items.sort(function (a, b) { return b.time - a.time; });
+  return items.slice(0, 6);
+}
+
+function sameDay(ms) { var a = new Date(ms), b = new Date(); return ms > 0 && a.toDateString() === b.toDateString(); }
+
+function showToday(items, ok, total, L) {
+  todayList.textContent = "";
+  $("today-h").textContent = "Articles from today in " + L.name;
+  todayList.lang = L.code;
+  var fresh = items.filter(function (i) { return sameDay(i.time); });
+  var list = fresh.length >= 6 ? fresh : items.slice(0, 12);
+  todayNote.textContent = !list.length
+    ? "No suggestions could be loaded right now. You can still paste a link above."
+    : (fresh.length >= 6 ? "" : "Not many new articles yet today, so the latest ones are shown. ") +
+      "From " + ok + " of " + total + " sources. Some sites show only part of an article to non-subscribers.";
+  list.forEach(function (i) {
+    var li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button"; b.className = "sug";
+    var t = document.createElement("span"); t.className = "t"; t.textContent = i.title;
+    var m = document.createElement("span"); m.className = "m";
+    m.textContent = i.source + (i.time ? " · " + new Date(i.time).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }) : "");
+    b.appendChild(t); b.appendChild(m);
+    b.addEventListener("click", function () {
+      $("f-url").value = i.link;
+      if (!wide.matches) todayEl.open = false;   // on a phone, fold the list away so the article is in view
+      var f = $("load");
+      if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true }));
+    });
+    li.appendChild(b); todayList.appendChild(li);
+  });
+  $("today-n").textContent = list.length ? String(list.length) : "";
+}
+
+function loadToday() {
+  var L = LANG, proxy = proxyBase();
+  if (!L || !L.feeds || !L.feeds.length || !proxy) { todayEl.hidden = true; return; }
+  if (todayCode === L.code && !todayEl.hidden) return;
+  todayCode = L.code; todayEl.hidden = false;
+  var key = "today-" + L.code;
+  try {
+    var c = JSON.parse(sessionStorage.getItem(key) || "null");
+    if (c && Date.now() - c.at < 20 * 60 * 1000) { showToday(c.items, c.ok, c.total, L); return; }
+  } catch (e) { /* no cache */ }
+  $("today-h").textContent = "Articles from today in " + L.name;
+  todayList.textContent = "";
+  todayNote.textContent = "Loading today's articles…";
+  Promise.all(L.feeds.map(function (f) {
+    return fetch(proxy + "/?lang=" + L.code + "&url=" + encodeURIComponent(f.url))
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (x) { return x ? feedItems(x, f) : []; })
+      .catch(function () { return []; });
+  })).then(function (groups) {
+    if (LANG !== L) return;
+    var seen = {}, items = [], ok = 0;
+    groups.forEach(function (g) { if (g.length) ok++; g.forEach(function (i) { if (!seen[i.link]) { seen[i.link] = 1; items.push(i); } }); });
+    items.sort(function (a, b) { return b.time - a.time; });
+    if (items.length) { try { sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), items: items, ok: ok, total: L.feeds.length })); } catch (e) { /* ignore */ } }
+    showToday(items, ok, L.feeds.length, L);
+  });
+}
 
 // ---------- Definitions from Wiktionary ----------
 var defCache = new Map();
@@ -447,7 +577,7 @@ function wikt(term) { return wiktFetch("en", term); }            // English Wikt
 function wiktNative(term) { return wiktFetch(LANG.wikt, term); } // the language's own Wiktionary: definitions in that language
 
 // Wording that marks "<grammar> of <other word>" lines, as English Wiktionary writes them for every language.
-var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)-person|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|preterite|preterit|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|enclitic|diminutive|augmentative|superlative|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated|informal|formal|apocopic|contraction|misspelling)\b/i;
+var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)-person|reflexive|pronominal|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|preterite|preterit|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|enclitic|diminutive|augmentative|superlative|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated|informal|formal|apocopic|contraction|misspelling)\b/i;
 var NOISE_TITLE = /^(Appendix:|Wiktionary:|Template:|Category:|Special:|w:|wikipedia:)/i;
 var VERB_FORM = /(participle|person|subjunctive|indicative|imperative|conditional|gerund|preterite|preterit)/i;
 
@@ -469,22 +599,43 @@ function parseDef(html) {
       var t = (links[i].getAttribute("title") || links[i].textContent || "").replace(/#.*$/, "").trim();
       if (t && cands.indexOf(t) === -1) cands.push(t);
     }
-    var m = /\bof\s+(\S+?)[.,;]?$/.exec(text);
-    if (m && cands.indexOf(m[1]) === -1) cands.push(m[1]);
+    // The word named right after "of" is the base word. Put it first: a template may also link a small
+    // pronoun such as "se" (as in "reflexive of tragar"), which must not be mistaken for the base word.
+    var m = /\bof\s+([^\s.,;+]+)/.exec(text);
+    if (m) { var at = cands.indexOf(m[1]); if (at !== -1) cands.splice(at, 1); cands.unshift(m[1]); }
+    var pron = /^(?:se|s['’]|me|te|nos|os|lo|la|los|las|le|les|lui|leur|y|en)$/i;
+    var real = cands.filter(function (c) { return !pron.test(c); });
+    if (real.length) cands = real;
   }
   return { text: text, cands: cands, isForm: cands.length > 0 };
 }
 
 // Real definitions only: skips lines that just point to another word.
+// Definitions a learner does not need to meet by accident are skipped when the word has other, more accurate meanings.
+// Acts as a filter for explicit content.
+// The word list is stored only as hashes (data/hidden_terms.js), so no such words appear in this repository.
+function h53(str) {
+  var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (var i = 0; i < str.length; i++) { var c = str.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+var HIDDEN = new Set(window.HIDDEN_TERMS || []);
+function hasHidden(text) {
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[^a-z]+/).some(function (w) { return w && HIDDEN.has(h53(w)); });
+}
+
 function pickDefs(entries, max) {
   var out = [];
   (entries || []).forEach(function (e) {
     (e.definitions || []).forEach(function (d) {
       var x = parseDef(d.definition);
-      if (x.text && !x.isForm && out.length < max) out.push({ pos: e.partOfSpeech || "", text: x.text });
+      if (x.text && !x.isForm) out.push({ pos: e.partOfSpeech || "", text: x.text });
     });
   });
-  return out;
+  var clean = out.filter(function (d) { return !hasHidden(d.text); });
+  return (clean.length ? clean : out).slice(0, max);
 }
 
 // Try each candidate base word until one gives real definitions. When a page only points to yet another
@@ -532,7 +683,15 @@ function lookup(word) {
   if (defCache.has(ck)) return defCache.get(ck);
   var p = wikt(key).then(function (data) {
     var entries = data && data[L.wikt];
-    if (!entries || !entries.length) return { none: true };
+    if (!entries || !entries.length) {
+      // No page for this exact form (for example an infinitive with a pronoun attached): try the guessed base word.
+      var g = L.guessLemmas(key).filter(function (c) { return c !== key; });
+      if (!g.length) return { none: true };
+      return baseDefinitions(g, true).then(function (got) {
+        if (!got) return { none: true };
+        return { lemma: got.lemma, form: "form of " + got.lemma, defs: got.defs, pos: got.defs[0] ? got.defs[0].pos : "" };
+      });
+    }
     var own = [], forms = [];
     entries.forEach(function (e) {
       (e.definitions || []).forEach(function (d) {
@@ -752,18 +911,18 @@ function extract(html, url) {
 $("load").addEventListener("submit", function (ev) {
   ev.preventDefault();
   var url = $("f-url").value.trim();
-  var proxy = (window.NEWS_READER && window.NEWS_READER.proxyUrl || "").replace(/\/+$/, "");
+  var proxy = proxyBase();
   if (!proxy) { setStatus("Link loading is not set up yet. Add your proxy address to config.js (see the README).", true); return; }
   goBtn.disabled = true;
   setStatus("Fetching the article…");
   var finalUrl = url;
-  fetch(proxy + "/?url=" + encodeURIComponent(url))
+  fetch(proxy + "/?lang=" + LANG.code + "&url=" + encodeURIComponent(url))
     .then(function (r) {
       finalUrl = r.headers.get("x-final-url") || url;
       if (!r.ok) return r.text().then(function (t) { throw new Error(t || "Could not fetch that page."); });
       return r.text();
     })
-    .then(function (html) { var a = extract(html, finalUrl); saveLang(a.langCode); return setLanguage(a.langCode).then(function () { return a; }); })
+    .then(function (html) { var a = extract(html, finalUrl); saveLang(a.langCode); return setLanguage(a.langCode).then(function () { syncHash(); loadToday(); return a; }); })
     .then(function (a) {
       if (!a.paras.length) throw new Error("No readable text was found on that page.");
       modeEl.textContent = "Reading: " + a.source;

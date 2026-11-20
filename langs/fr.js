@@ -71,11 +71,11 @@ function guessLemmas(w) {
 
 // Paywall, login and promo lines that sit inside the article body.
 var BOILERPLATE = [
-  /cet article vous est offert/i, /pour lire gratuitement/i, /r[ée]serv[ée] aux abonn[ée]s/i, /vous n['’]?[êe]tes pas inscrit/i,
+  /cet article vous est offert/i, /pour lire gratuitement/i, /r[ée]serv[ée]e?s? aux abonn[ée]s/i, /vous n['’]?[êe]tes pas inscrit/i, /^votre pseudo\b/i, /il vous reste [\d.,\s]*\s*% de cet article/i,
   /inscrivez-vous gratuitement/i, /connectez-vous/i, /d[ée]j[àa] abonn[ée]/i, /accepter et continuer/i,
   /^(se connecter|s['’]abonner|abonnez-vous|s['’]inscrire|inscrivez-vous|lire plus tard|partager|r[ée]utiliser ce contenu|ajouter aux favoris|offrir cet article|voir plus|lire la suite|lire aussi|lire également|à lire aussi|sur le même sujet|publicit[ée]|newsletter|contribuer)\b/i
 ];
-var LOGIN_WORDS = /(connectez-vous|se connecter|abonnez-vous|s['’]abonner|inscrivez-vous|s['’]inscrire|r[ée]serv[ée] aux abonn|cet article vous est offert|lecture (offerte|r[ée]serv)|newsletter)/i;
+var LOGIN_WORDS = /(connectez-vous|se connecter|abonnez-vous|s['’]abonner|inscrivez-vous|s['’]inscrire|r[ée]serv[ée]e?s? aux abonn|cet article vous est offert|lecture (offerte|r[ée]serv)|newsletter)/i;
 
 // Expression matching: verb forms and the adverbs that may sit between a verb and the rest of a phrase.
 var NEG = "(?:\\s+(?:pas|plus|jamais|guère|toujours|déjà|encore|aussi|bien|même|souvent|également))?";
@@ -123,6 +123,13 @@ window.LANGS.fr = {
   verbForms: VERB_FORMS,
   infEnding: /(er|ir|re)$/,
   tokenMap: { de: "(?:des|du|de|d['’])" },
+  // News feeds used for the "Today's articles" list. A feed that cannot be loaded is skipped.
+  feeds: [
+    { name: "Le Monde", url: "https://www.lemonde.fr/rss/une.xml" },
+    { name: "20 Minutes", url: "https://www.20minutes.fr/feeds/rss-une.xml" },
+    { name: "Ouest-France", url: "https://www.ouest-france.fr/rss/une" },
+    { name: "La Croix", url: "https://www.la-croix.com/feeds/rss/site.xml" }
+  ],
   sample: SAMPLE_FR,
   sampleLabel: "Sample article written for this prototype"
 };
