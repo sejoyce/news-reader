@@ -179,13 +179,13 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
     <span id="mode">Sample article written for this prototype</span>
   </div>
 
+  <label class="opt" for="lang">Language <select id="lang"></select></label>
   <p class="legend">
     <span class="mark">Dotted orange underline</span> = likely B2/C1 words (<span id="count">0</span> here).
     <span class="xmark">Solid blue underline</span> = fixed expressions (<span id="xcount">0</span> here).
     Hover on desktop, or tap on mobile, to see the meaning.
   </p>
   <label class="opt" for="hide-cog"><input type="checkbox" id="hide-cog" checked> Hide words that look like English (cognates)</label>
-  <label class="opt" for="lang">Language <select id="lang"></select></label>
   <label class="opt" for="show-expr"><input type="checkbox" id="show-expr" checked> Mark fixed expressions</label>
 
   <form class="load" id="load">
@@ -516,7 +516,7 @@ function showToday(items, ok, total, L) {
   var fresh = items.filter(function (i) { return sameDay(i.time); });
   var list = fresh.length >= 6 ? fresh : items.slice(0, 12);
   todayNote.textContent = !list.length
-    ? "No suggestions could be loaded right now. You can still paste a link above."
+    ? "No suggestions could be loaded right now. You can still paste a link."
     : (fresh.length >= 6 ? "" : "Not many new articles yet today, so the latest ones are shown. ") +
       "From " + ok + " of " + total + " sources. Some sites show only part of an article to non-subscribers.";
   list.forEach(function (i) {
