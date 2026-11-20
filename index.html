@@ -158,12 +158,14 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
 #today .m { display: block; margin-top: 2px; font-size: 0.75rem; color: var(--muted); }
 
 @media (min-width: 1180px) {
-  #today { position: fixed; top: 24px; left: calc(50% + 19rem + 28px); width: 16rem; margin: 0; max-height: calc(100vh - 48px); overflow-y: auto; border: 0; border-left: 1px solid var(--rule); }
-  #today summary { cursor: default; padding: 0 0 4px 16px; }
+  /* The sidebar (16rem) and the article column (38rem) are centred together, with a 2.5rem gap, so both sides of the page are equally empty. */
+  main { position: relative; left: 148px; }
+  #today { position: fixed; top: 24px; left: calc(50% - 28.25rem); width: 16rem; box-sizing: border-box; margin: 0; max-height: calc(100vh - 48px); overflow-y: auto; border: 0; border-right: 1px solid var(--rule); }
+  #today summary { cursor: default; padding: 0 16px 4px 0; }
   #today summary::after { display: none; }
-  #today .note { padding: 0 0 8px 16px; }
+  #today .note { padding: 0 16px 8px 0; }
   #today ul { max-height: none; overflow: visible; border-top: 0; }
-  #today button.sug { padding: 10px 0 10px 16px; }
+  #today button.sug { padding: 10px 16px 10px 0; }
 }
 
 .foot { font-family: var(--sans); font-size: 0.8125rem; line-height: 1.5; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 12px; margin-top: 36px; }
@@ -314,7 +316,7 @@ function updateDiag() {
   if (!d || !LANG) return;
   d.textContent = " Language: " + LANG.name + ". Word lists: " + LANG.name + " " + (rank ? rank.size.toLocaleString("en-US") : "NOT LOADED (expected at " + LANG.words + ")") +
     ", English " + (en ? en.size.toLocaleString("en-US") : "NOT FOUND (expected at data/en_words.txt)") +
-    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 9.";
+    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 10.";
 }
 
 function setLanguage(code) {
@@ -575,7 +577,7 @@ function wikt(term) { return wiktFetch("en", term); }            // English Wikt
 function wiktNative(term) { return wiktFetch(LANG.wikt, term); } // the language's own Wiktionary: definitions in that language
 
 // Wording that marks "<grammar> of <other word>" lines, as English Wiktionary writes them for every language.
-var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)-person|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|preterite|preterit|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|enclitic|diminutive|augmentative|superlative|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated|informal|formal|apocopic|contraction|misspelling)\b/i;
+var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)-person|reflexive|pronominal|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|preterite|preterit|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|enclitic|diminutive|augmentative|superlative|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated|informal|formal|apocopic|contraction|misspelling)\b/i;
 var NOISE_TITLE = /^(Appendix:|Wiktionary:|Template:|Category:|Special:|w:|wikipedia:)/i;
 var VERB_FORM = /(participle|person|subjunctive|indicative|imperative|conditional|gerund|preterite|preterit)/i;
 
@@ -597,8 +599,13 @@ function parseDef(html) {
       var t = (links[i].getAttribute("title") || links[i].textContent || "").replace(/#.*$/, "").trim();
       if (t && cands.indexOf(t) === -1) cands.push(t);
     }
-    var m = /\bof\s+(\S+?)[.,;]?$/.exec(text);
-    if (m && cands.indexOf(m[1]) === -1) cands.push(m[1]);
+    // The word named right after "of" is the base word. Put it first: a template may also link a small
+    // pronoun such as "se" (as in "reflexive of tragar"), which must not be mistaken for the base word.
+    var m = /\bof\s+([^\s.,;+]+)/.exec(text);
+    if (m) { var at = cands.indexOf(m[1]); if (at !== -1) cands.splice(at, 1); cands.unshift(m[1]); }
+    var pron = /^(?:se|s['’]|me|te|nos|os|lo|la|los|las|le|les|lui|leur|y|en)$/i;
+    var real = cands.filter(function (c) { return !pron.test(c); });
+    if (real.length) cands = real;
   }
   return { text: text, cands: cands, isForm: cands.length > 0 };
 }
@@ -676,7 +683,15 @@ function lookup(word) {
   if (defCache.has(ck)) return defCache.get(ck);
   var p = wikt(key).then(function (data) {
     var entries = data && data[L.wikt];
-    if (!entries || !entries.length) return { none: true };
+    if (!entries || !entries.length) {
+      // No page for this exact form (for example an infinitive with a pronoun attached): try the guessed base word.
+      var g = L.guessLemmas(key).filter(function (c) { return c !== key; });
+      if (!g.length) return { none: true };
+      return baseDefinitions(g, true).then(function (got) {
+        if (!got) return { none: true };
+        return { lemma: got.lemma, form: "form of " + got.lemma, defs: got.defs, pos: got.defs[0] ? got.defs[0].pos : "" };
+      });
+    }
     var own = [], forms = [];
     entries.forEach(function (e) {
       (e.definitions || []).forEach(function (d) {
