@@ -46,10 +46,17 @@ main { max-width: 38rem; margin: 0 auto; min-width: 0; }
   padding-bottom: 12px;
   border-bottom: 1px solid var(--rule);
 }
-.bar strong { color: var(--fg); font-weight: 600; }
+.bar { align-items: center; }
+.bar strong { color: var(--fg); font-weight: 700; font-size: 1.0625rem; }
+.lang { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; }
+.intro { font-family: var(--sans); font-size: 0.9375rem; line-height: 1.55; color: var(--fg); margin: 16px 0 0; }
+.key { font-family: var(--sans); font-size: 0.8125rem; line-height: 1.5; color: var(--muted); margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.key p { margin: 0 0 6px; }
+.opts summary { cursor: pointer; width: fit-content; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.opts summary:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
 
 .opt { display: flex; gap: 8px; align-items: center; font-family: var(--sans); font-size: 0.875rem; color: var(--muted); margin-top: 10px; cursor: pointer; }
-.legend { font-family: var(--sans); font-size: 0.875rem; line-height: 1.5; color: var(--muted); margin: 16px 0 0; }
+.legend { color: var(--fg); }
 .mark, .w {
   text-decoration-line: underline;
   text-decoration-style: dotted;
@@ -60,7 +67,7 @@ main { max-width: 38rem; margin: 0 auto; min-width: 0; }
 .mark { color: var(--fg); }
 
 form.load { margin-top: 16px; font-family: var(--sans); }
-form.load label { display: grid; gap: 4px; font-size: 0.8125rem; color: var(--muted); min-width: 0; }
+form.load label { display: grid; gap: 6px; font-size: 0.875rem; font-weight: 600; color: var(--fg); min-width: 0; }
 form.load .inline { display: flex; gap: 8px; }
 input[type="url"] {
   flex: 1;
@@ -113,7 +120,7 @@ article p.body { font-size: 1.125rem; line-height: 1.75; margin: 0 0 1.1em; max-
 .x { cursor: pointer; }
 .x:hover, .x.on { background: var(--hl2-soft); }
 .x:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(--bg); border: 1px solid #999; border-radius: 0; padding: 2px 6px; }
+select { font: inherit; font-size: 0.875rem; color: var(--fg); background: var(--bg); border: 1px solid #999; border-radius: 0; padding: 2px 6px; }
 .opt { display: block; font-family: var(--sans); font-size: 0.8125rem; color: var(--muted); margin-top: 6px; }
 
 #tip {
@@ -176,20 +183,11 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
 <main>
   <div class="bar">
     <strong>News Reader</strong>
-    <span id="mode">Sample article written for this prototype</span>
+    <label class="lang" for="lang">Language <select id="lang"></select></label>
   </div>
 
-  <label class="opt" for="lang">Language <select id="lang"></select></label>
-  <p class="legend">
-    <span class="mark">Dotted orange underline</span> = likely B2/C1 words (<span id="count">0</span> here).
-    <span class="xmark">Solid blue underline</span> = fixed expressions (<span id="xcount">0</span> here).
-    Hover on desktop, or tap on mobile, to see the meaning.
-  </p>
-  <label class="opt" for="hide-cog"><input type="checkbox" id="hide-cog" checked> Hide words that look like English (cognates)</label>
-  <label class="opt" for="show-expr"><input type="checkbox" id="show-expr" checked> Mark fixed expressions</label>
-
   <form class="load" id="load">
-    <label for="f-url">Link to an article
+    <label for="f-url">Paste a link to a news article
       <span class="inline">
         <input type="url" id="f-url" autocomplete="off" placeholder="https://www.lemonde.fr/..." required>
         <button type="submit" class="btn" id="go">Read</button>
@@ -203,6 +201,19 @@ select { font: inherit; font-size: 0.8125rem; color: var(--fg); background: var(
     <p class="note" id="today-note" role="status"></p>
     <ul id="today-list"></ul>
   </details>
+
+  <div class="key">
+    <p class="now">Now showing: <span id="mode"></span></p>
+    <p class="legend">
+      <span class="mark">Dotted orange</span> = words likely at B2/C1 level (<span id="count">0</span>)<br>
+      <span class="xmark">Solid blue</span> = fixed expressions (<span id="xcount">0</span>)
+    </p>
+    <details class="opts">
+      <summary>Display options</summary>
+      <label class="opt" for="hide-cog"><input type="checkbox" id="hide-cog" checked> Hide words that look like English (cognates)</label>
+      <label class="opt" for="show-expr"><input type="checkbox" id="show-expr" checked> Mark fixed expressions</label>
+    </details>
+  </div>
 
   <article id="article"></article>
 
@@ -316,7 +327,7 @@ function updateDiag() {
   if (!d || !LANG) return;
   d.textContent = " Language: " + LANG.name + ". Word lists: " + LANG.name + " " + (rank ? rank.size.toLocaleString("en-US") : "NOT LOADED (expected at " + LANG.words + ")") +
     ", English " + (en ? en.size.toLocaleString("en-US") : "NOT FOUND (expected at data/en_words.txt)") +
-    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 11.";
+    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 12.";
 }
 
 function setLanguage(code) {
@@ -516,7 +527,7 @@ function showToday(items, ok, total, L) {
   var fresh = items.filter(function (i) { return sameDay(i.time); });
   var list = fresh.length >= 6 ? fresh : items.slice(0, 12);
   todayNote.textContent = !list.length
-    ? "No suggestions could be loaded right now. You can still paste a link."
+    ? "No suggestions could be loaded right now. You can still paste a link above."
     : (fresh.length >= 6 ? "" : "Not many new articles yet today, so the latest ones are shown. ") +
       "From " + ok + " of " + total + " sources. Some sites show only part of an article to non-subscribers.";
   list.forEach(function (i) {
@@ -611,8 +622,7 @@ function parseDef(html) {
 }
 
 // Real definitions only: skips lines that just point to another word.
-// Definitions a learner does not need to meet by accident are skipped when the word has other, more accurate meanings.
-// Acts as a filter for explicit content.
+// Senses a learner does not need to meet by accident are skipped when the word has other senses.
 // The word list is stored only as hashes (data/hidden_terms.js), so no such words appear in this repository.
 function h53(str) {
   var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
