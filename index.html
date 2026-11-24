@@ -327,7 +327,7 @@ function updateDiag() {
   if (!d || !LANG) return;
   d.textContent = " Language: " + LANG.name + ". Word lists: " + LANG.name + " " + (rank ? rank.size.toLocaleString("en-US") : "NOT LOADED (expected at " + LANG.words + ")") +
     ", English " + (en ? en.size.toLocaleString("en-US") : "NOT FOUND (expected at data/en_words.txt)") +
-    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 12.";
+    ", expressions " + (EXPRS ? EXPRS.length : "NOT FOUND (expected at " + LANG.exprs + ")") + ". Page version 16.";
 }
 
 function setLanguage(code) {
@@ -387,6 +387,9 @@ function addWords(parent, text) {
   var last = 0, m;
   LANG.token.lastIndex = 0;
   while ((m = LANG.token.exec(text))) {
+    // A fragment before an apostrophe is an elision (jusqu'à, lorsqu'il, quelqu'un), not a word of its own.
+    var after = text.charAt(m.index + m[0].length);
+    if (after === "'" || after === "\u2019") continue;
     var lvl = rank ? levelOf(m[0]) : "";
     if (!lvl) continue;
     if (m.index > last) parent.appendChild(document.createTextNode(text.slice(last, m.index)));
@@ -491,6 +494,7 @@ window.addEventListener("hashchange", function () { var c = hashLang(); if (c &&
 
 // ---------- Today's articles ----------
 // Reads the language's news feeds through the same proxy and lists what was published today.
+var feedTitles = {};   // headline from the feed, used if the page only offers a shortened one
 var todayEl = $("today"), todayList = $("today-list"), todayNote = $("today-note"), todayCode = null;
 
 // On wide screens the list is a sidebar that is always open; on narrow ones it is a box the reader opens.
@@ -535,10 +539,11 @@ function showToday(items, ok, total, L) {
     b.type = "button"; b.className = "sug";
     var t = document.createElement("span"); t.className = "t"; t.textContent = i.title;
     var m = document.createElement("span"); m.className = "m";
-    m.textContent = i.source + (i.time ? " · " + new Date(i.time).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }) : "");
+    m.textContent = i.source + (i.time ? " · " + new Date(i.time).toLocaleString(L.code, { weekday: "short", hour: "numeric", minute: "2-digit" }) : "");
     b.appendChild(t); b.appendChild(m);
     b.addEventListener("click", function () {
       $("f-url").value = i.link;
+      feedTitles[i.link] = i.title;
       if (!wide.matches) todayEl.open = false;   // on a phone, fold the list away so the article is in view
       var f = $("load");
       if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true }));
@@ -588,7 +593,8 @@ function wikt(term) { return wiktFetch("en", term); }            // English Wikt
 function wiktNative(term) { return wiktFetch(LANG.wikt, term); } // the language's own Wiktionary: definitions in that language
 
 // Wording that marks "<grammar> of <other word>" lines, as English Wiktionary writes them for every language.
-var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)-person|reflexive|pronominal|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|preterite|preterit|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|enclitic|diminutive|augmentative|superlative|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated|informal|formal|apocopic|contraction|misspelling)\b/i;
+var FORM_START = /^\s*(?:\([^)]*\)\s*)?(?:(?:first|second|third)(?:[\/ ](?:or |and )?(?:first|second|third))*[- ]person|reflexive|pronominal|singular|plural|masculine|feminine|neuter|present|past|future|imperfect|preterite|preterit|simple|compound|conditional|subjunctive|indicative|imperative|participle|gerund|inflection|enclitic|diminutive|augmentative|superlative|alternative|obsolete|nonstandard|dated|archaic|rare|superseded|elongated|informal|formal|apocopic|contraction|misspelling)\b/i;
+var GRAMMAR_WORDS = /\b(person|singular|plural|participle|imperative|subjunctive|indicative|gerund|preterite|preterit|conditional|infinitive|tense)\b/i;
 var NOISE_TITLE = /^(Appendix:|Wiktionary:|Template:|Category:|Special:|w:|wikipedia:)/i;
 var VERB_FORM = /(participle|person|subjunctive|indicative|imperative|conditional|gerund|preterite|preterit)/i;
 
@@ -598,7 +604,10 @@ function parseDef(html) {
   d.querySelectorAll("ul, ol, dl, style, sup").forEach(function (n) { n.remove(); });
   var text = (d.body.textContent || "").replace(/\s+/g, " ").trim();
   var marked = d.querySelector(".form-of-definition, .form-of-definition-link");
-  var looksForm = text.length < 160 && FORM_START.test(text) && /\bof\s+\S+\.?$/.test(text);
+  // "second-person singular imperative of hablar", "first/third-person singular present subjunctive of hablar (tú)":
+  // grammar labels that only point to another word are never shown as meanings.
+  var looksForm = text.length < 200 && FORM_START.test(text) &&
+    (/\bof\s+\S+\.?$/.test(text) || (GRAMMAR_WORDS.test(text) && /\bof\s+[^\s.,;:()]+/.test(text)));
   var cands = [];
   if (marked || looksForm) {
     var scope = d.querySelector(".form-of-definition") || d.body;
@@ -868,6 +877,30 @@ function jsonLdAuthors(doc) {
   return out;
 }
 
+function jsonLdHeadline(doc) {
+  var out = "";
+  doc.querySelectorAll('script[type="application/ld+json"]').forEach(function (s) {
+    if (out) return;
+    try {
+      var data = JSON.parse(s.textContent);
+      (Array.isArray(data) ? data : (data["@graph"] || [data])).forEach(function (n) { if (!out && n && typeof n.headline === "string") out = n.headline; });
+    } catch (e) { /* ignore malformed JSON-LD */ }
+  });
+  return out;
+}
+
+// Sites often cut the title in their social-sharing tag ("Le milliardaire … "). Prefer a complete one.
+function isCut(t) { return /(\u2026|\.\.\.)\s*$/.test(t); }
+function stem(t) { return t.replace(/\s*(\u2026|\.\.\.)\s*$/, "").toLowerCase(); }
+function bestTitle(cands, hint) {
+  var list = cands.map(tidy).filter(Boolean);
+  if (!list.length) return "";
+  hint = tidy(hint);
+  if (isCut(list[0]) && hint && !isCut(hint) && hint.toLowerCase().indexOf(stem(list[0])) === 0) return hint;
+  for (var i = 0; i < list.length; i++) if (!isCut(list[i])) return list[i];
+  return hint && !isCut(hint) ? hint : list.slice().sort(function (a, b) { return b.length - a.length; })[0];
+}
+
 // Paywall, login and promo lines that sit inside the article body.
 var BOILERPLATE = [
   /cet article vous est offert/i, /pour lire gratuitement/i, /r[ée]serv[ée] aux abonn[ée]s/i, /vous n['’]?[êe]tes pas inscrit/i,
@@ -889,7 +922,7 @@ function cleanParas(paras, L) {
   });
 }
 
-function extract(html, url) {
+function extract(html, url, hint) {
   var doc = new DOMParser().parseFromString(html, "text/html");
   var host = ""; try { host = new URL(url).hostname.replace(/^www\./, ""); } catch (e) {}
   var source = metaContent(doc, "og:site_name") || host;
@@ -914,7 +947,7 @@ function extract(html, url) {
   if (paras.join(" ").length < 900) notes.push("Only a short text came back. The article may be behind a paywall or login.");
 
   return {
-    title: metaContent(doc, "og:title") || (h1 && h1.textContent.replace(/\s+/g, " ").trim()) || art.title,
+    title: bestTitle([metaContent(doc, "og:title"), metaContent(doc, "twitter:title"), jsonLdHeadline(doc), h1 && h1.textContent, art.title], hint),
     author: author, source: source, url: url, dek: dek, paras: paras, notice: notes.join(" "), langCode: code, fetched: true
   };
 }
@@ -933,7 +966,7 @@ $("load").addEventListener("submit", function (ev) {
       if (!r.ok) return r.text().then(function (t) { throw new Error(t || "Could not fetch that page."); });
       return r.text();
     })
-    .then(function (html) { var a = extract(html, finalUrl); saveLang(a.langCode); return setLanguage(a.langCode).then(function () { syncHash(); loadToday(); return a; }); })
+    .then(function (html) { var a = extract(html, finalUrl, feedTitles[url]); saveLang(a.langCode); return setLanguage(a.langCode).then(function () { syncHash(); loadToday(); return a; }); })
     .then(function (a) {
       if (!a.paras.length) throw new Error("No readable text was found on that page.");
       modeEl.textContent = "Reading: " + a.source;
